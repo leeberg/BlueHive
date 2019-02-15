@@ -3,21 +3,6 @@
 
 #Import-Module CredentialManager -force
 
-#[System.Net.ServicePointManager]::ServerCertificateValidationCallback = { $true }
-add-type @"
-using System.Net;
-using System.Security.Cryptography.X509Certificates;
-public class TrustAllCertsPolicy : ICertificatePolicy {
-    public bool CheckValidationResult(
-        ServicePoint srvPoint, X509Certificate certificate,
-        WebRequest request, int certificateProblem) {
-        return true;
-    }
-}
-"@
-
-[System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
-
 
 function Get-EmpireModules
 {
@@ -449,6 +434,23 @@ Function Save-AllADUsers
 
 
 
+Function Save-AllADHoneyUsers
+{
+    <#
+    .SYNOPSIS 
+    Take a Collection of Objects and save it to the JSON file
+     
+    #>
+    
+    Param(
+        $UserObjects
+    )
+
+    Clear-BHUserHoneyAccountData
+    Write-BHUserHoneyAccountData -AccountData $UserObjects
+    
+
+}
 
 
 
@@ -458,6 +460,8 @@ Function Save-AllADUsers
 
 
 
+
+<#
 
 
 
@@ -469,3 +473,11 @@ Get-RandomPerson
 
 $users = Get-AllADUsers 
 Save-AllADUsers -UserObjects $users
+
+
+
+#>
+
+$honeyUsers = Get-HoneyADusers
+
+Save-AllADHoneyUsers -UserObjects $honeyUsers

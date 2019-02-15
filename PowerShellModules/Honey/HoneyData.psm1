@@ -6,7 +6,8 @@ $EmpireModuleFilePath = 'Data\EmpireModules.json'
 $BHUserAccountsPath = 'Data\Accounts.json'
 $NetworkScanFilePath = 'Data\NetworkScan.json'
 $BSLogFilePath = 'Data\AuditLog.log'
-
+$BHUserHoneyAccountsPath = 'Data\Managed\HoneyAccounts.json'
+                            
 $BSFirstNamesFile = 'Data\Generation\FirstNames.txt'
 $BSLastNamesFile = 'Data\Generation\LastNames.txt'
 $BSServiceAccountNamesFile = 'Data\Generation\service-accounts.txt'
@@ -79,6 +80,43 @@ Function Get-BHAccountData()
     
     
 }
+
+
+
+Function Get-BHHoneyAccountData()
+{
+
+    $Data = @()
+    $ResourcesJsonContent = Get-BHJSONObject -BHFile $BHUserHoneyAccountsPath
+
+    return $ResourcesJsonContent
+
+    <#
+    #### Data Stuff for translated 
+    foreach($Resource in $ResourcesJsonContent)
+    {
+        
+        $Data = $Data +[PSCustomObject]@{
+            id=($Resource.id);
+            DistinguishedName=($Resource.name);
+            checkin_time=($Resource.checkin_time);
+            external_ip=($Resource.external_ip);
+            hostname=($Resource.hostname);
+            internal_ip=($Resource.internal_ip);
+            langauge=($Resource.langauge);
+            langauge_version=($Resource.langauge_version);
+            lastseen_time=($Resource.lastseen_time);
+            listener=($Resource.listener);
+            os_details=($Resource.os_details);
+            username=($Resource.username);
+        }
+      
+    }
+    #>
+    
+    
+}
+
 
 
 
@@ -285,6 +323,17 @@ Param (
 }
 
 
+Function Write-BHUserHoneyAccountData
+{
+Param (
+    $AccountData
+)
+    
+    Write-BHJSON -BHFile $BHUserHoneyAccountsPath -BHObjectData $AccountData
+
+}
+
+
 Function Write-BSEmpireConfigData
 {
 Param (
@@ -337,6 +386,22 @@ Function Clear-BHUserAccountData
     {
          # Clear Existings
         Clear-Content $BHUserAccountsPath -Force
+    }
+    else 
+    {
+        # Does not Exist
+    }
+}
+
+
+
+
+Function Clear-BHUserHoneyAccountData
+{
+    if(Test-Path($BHUserHoneyAccountsPath))
+    {
+         # Clear Existings
+        Clear-Content $BHUserHoneyAccountsPath -Force
     }
     else 
     {
