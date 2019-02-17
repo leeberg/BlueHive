@@ -7,8 +7,12 @@ Data/EmpireAgents.json
 Data/EmpireConfig.json
 Data/EmpireModules.json
 Data/NetworkScan.json
+Data/Managed/HoneyAccounts.json
 Data/AuditLog.log
+Data/ErrorLog.log
 Data/Accounts.json
+Data/OUs.json
 test.ps1
 adtesting.ps1
 test.md
+Data/Managed/HoneyAccounts.json

@@ -6,7 +6,9 @@ $EmpireModuleFilePath = 'Data\EmpireModules.json'
 $BHUserAccountsPath = 'Data\Accounts.json'
 $NetworkScanFilePath = 'Data\NetworkScan.json'
 $BSLogFilePath = 'Data\AuditLog.log'
+$BSErrorFilePath = 'Data\ErrorLog.log'
 $BHUserHoneyAccountsPath = 'Data\Managed\HoneyAccounts.json'
+$BHOUPath = 'Data\OUs.json'
                             
 $BSFirstNamesFile = 'Data\Generation\FirstNames.txt'
 $BSLastNamesFile = 'Data\Generation\LastNames.txt'
@@ -80,6 +82,42 @@ Function Get-BHAccountData()
     
     
 }
+
+
+Function Get-BHOuData()
+{
+
+    $Data = @()
+    $ResourcesJsonContent = Get-BHJSONObject -BHFile $BHOUPath
+
+    return $ResourcesJsonContent
+
+    <#
+    #### Data Stuff for translated 
+    foreach($Resource in $ResourcesJsonContent)
+    {
+        
+        $Data = $Data +[PSCustomObject]@{
+            id=($Resource.id);
+            DistinguishedName=($Resource.name);
+            checkin_time=($Resource.checkin_time);
+            external_ip=($Resource.external_ip);
+            hostname=($Resource.hostname);
+            internal_ip=($Resource.internal_ip);
+            langauge=($Resource.langauge);
+            langauge_version=($Resource.langauge_version);
+            lastseen_time=($Resource.lastseen_time);
+            listener=($Resource.listener);
+            os_details=($Resource.os_details);
+            username=($Resource.username);
+        }
+      
+    }
+    #>
+    
+    
+}
+
 
 
 
@@ -333,6 +371,17 @@ Param (
 
 }
 
+Function Write-BHOUData
+{
+Param (
+    $OUData
+)
+    
+    Write-BHJSON -BHFile $BHOUPath -BHObjectData $OUData
+
+}
+
+
 
 Function Write-BSEmpireConfigData
 {
@@ -377,6 +426,15 @@ Param (
 )
     $BSLogContentFormatted = ($(Get-Date -Format 'yyyy-MM-dd hh:mm:ss') + ' : ' + $BSLogContent)
     $BSLogContentFormatted | Out-File $BSLogFilePath -Append
+}
+
+Function Write-ErrorLog
+{
+Param (
+    $BSLogContent
+)
+    $BSLogContentFormatted = ($(Get-Date -Format 'yyyy-MM-dd hh:mm:ss') + ' : ' + $BSLogContent)
+    $BSLogContentFormatted | Out-File $BSErrorFilePath -Append
 }
 
 

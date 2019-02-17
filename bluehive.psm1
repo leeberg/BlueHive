@@ -6,10 +6,10 @@
     $Pages += . (Join-Path $PSScriptRoot "pages\home.ps1")
 
     Get-ChildItem (Join-Path $PSScriptRoot "pages") -Exclude "home.ps1" | ForEach-Object {
-    #    $Pages += . $_.FullName
+        $Pages += . $_.FullName
     }
     
-    $BSEndpoints = New-UDEndpointInitialization -Module @("PowerShellModules\Empire\BlueHiveData.psm1", "PowerShellModules\Empire\BlueHiveEmpire.psm1")
+    $BSEndpoints = New-UDEndpointInitialization -Module @("PowerShellModules\Honey\Honey.psm1", "PowerShellModules\Honey\HoneyAD.psm1", "PowerShellModules\Honey\HoneyData.psm1")
 
     $Dashboard = New-UDDashboard -Title "BlueHive 🐝 🍯 🐝" -Pages $Pages -EndpointInitialization $BSEndpoints 
     Try{

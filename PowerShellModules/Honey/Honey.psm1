@@ -442,14 +442,46 @@ Function Save-AllADHoneyUsers
      
     #>
     
-    Param(
-        $UserObjects
-    )
+    #Param(
+        #$UserObjects
+    #)
 
-    Clear-BHUserHoneyAccountData
+    try{
+        $UserObjects = Get-HoneyADusers
+        Clear-BHUserHoneyAccountData
+    }
+    catch{
+        #todo
+    }
+    
     Write-BHUserHoneyAccountData -AccountData $UserObjects
     
 
+}
+
+
+Function Save-AllADOUs
+{
+    <#
+    .SYNOPSIS 
+    Take a Collection of Objects and save it to the JSON file
+     
+    #>
+    
+    #Param(
+    #    $UserObjects
+   # )
+
+    try {
+        $OUs = Get-AllADOrganizationalUnits
+        Clear-AllADOrganizationalUnits
+    }
+    catch {
+        
+        Write-BHOUData -OUData $OUs
+    
+    }
+    
 }
 
 
@@ -461,23 +493,23 @@ Function Save-AllADHoneyUsers
 
 
 
-<#
+
 
 
 
 ##### Testing Zone
 
-Deploy-HoneyUserAccount
-Get-RandomServiceAccount
-Get-RandomPerson
+#Deploy-HoneyUserAccount
+#Get-RandomServiceAccount
+#Get-RandomPerson
+
+<#
 
 $users = Get-AllADUsers 
 Save-AllADUsers -UserObjects $users
 
+$honeyUsers = Get-HoneyADusers
+Save-AllADHoneyUsers -UserObjects $honeyUsers
 
 
 #>
-
-$honeyUsers = Get-HoneyADusers
-
-Save-AllADHoneyUsers -UserObjects $honeyUsers
