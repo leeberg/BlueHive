@@ -398,16 +398,6 @@ Function Get-EmpireReports
 
 
 
-Function Get-EmpireReports
-{
-    #https://github.com/EmpireProject/Empire/wiki/RESTful-API
-
-    Param(
-        $Domain = '192.168.200.108'
-    )
-
-
-}
 
 
 
@@ -421,12 +411,18 @@ Function Save-AllADUsers
     Take a Collection of Objects and save it to the JSON file
      
     #>
-    
-    Param(
-        $UserObjects
-    )
 
-    Clear-BHUserAccountData
+    Param(
+        $DomainController = 'bc-dc.berg.com'
+    )
+   
+    try{
+        $UserObjects = Get-AllADUsers -DomainController $DomainController
+        Clear-BHUserAccountData
+    }
+    catch{
+        #derp
+    }
     Write-BHUserAccountData -AccountData $UserObjects
     
 
@@ -441,17 +437,19 @@ Function Save-AllADHoneyUsers
     Take a Collection of Objects and save it to the JSON file
      
     #>
-    
-    #Param(
-        #$UserObjects
-    #)
 
-    try{
-        $UserObjects = Get-HoneyADusers
+    Param(
+        $DomainController = 'bc-dc.berg.com'
+    )
+   
+    
+    
+    try{ 
+        $UserObjects = Get-HoneyADusers -DomainController $DomainController
         Clear-BHUserHoneyAccountData
     }
     catch{
-        #todo
+        #todo derp
     }
     
     Write-BHUserHoneyAccountData -AccountData $UserObjects
@@ -468,12 +466,13 @@ Function Save-AllADOUs
      
     #>
     
-    #Param(
-    #    $UserObjects
-   # )
+    Param(
+        $DomainController = 'bc-dc.berg.com'
+    )
+   
 
     try {
-        $OUs = Get-AllADOrganizationalUnits
+        $OUs = Get-AllADOrganizationalUnits -DomainController $DomainController
         Clear-AllADOrganizationalUnits
     }
     catch {
@@ -488,7 +487,35 @@ Function Save-AllADOUs
 
 
 
+Function Invoke-BHFullADSync
+{
+    <#
+    .SYNOPSIS
+    # I have my domain and now I want to gather all the users and honey tokens
+    
+    #>
 
+
+    Param(
+        $DomainController = 'BC-DC.berg.com'
+        
+    )
+  
+
+                
+    Write-AuditLog -BSLogContent "Starting AD Sync!"
+                
+    Write-AuditLog -BSLogContent "Syncing Accounts from: $($DomainController)"
+    Save-AllADUsers -DomainController $DomainController
+
+    Write-AuditLog -BSLogContent "Syncing Existing Honey Accounts from: $($DomainController)"
+    Save-AllADHoneyUsers  -DomainController $DomainController
+
+    Write-AuditLog -BSLogContent "Syncing OUs from: $($DomainController)"
+    Save-AllADOUs  -DomainController $DomainController
+
+    Write-AuditLog -BSLogContent "AD Sync Complete!"
+}
 
 
 
@@ -502,14 +529,3 @@ Function Save-AllADOUs
 #Deploy-HoneyUserAccount
 #Get-RandomServiceAccount
 #Get-RandomPerson
-
-<#
-
-$users = Get-AllADUsers 
-Save-AllADUsers -UserObjects $users
-
-$honeyUsers = Get-HoneyADusers
-Save-AllADHoneyUsers -UserObjects $honeyUsers
-
-
-#>

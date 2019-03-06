@@ -1,15 +1,22 @@
 #### All functions need to have proper function params, synopsis, help, etc....
 #### Also where my psd1 file at
 
-$EmpireConfigFilePath = 'Data\EmpireConfig.json'
-$EmpireModuleFilePath = 'Data\EmpireModules.json'
-$BHUserAccountsPath = 'Data\Accounts.json'
-$NetworkScanFilePath = 'Data\NetworkScan.json'
-$BSLogFilePath = 'Data\AuditLog.log'
-$BSErrorFilePath = 'Data\ErrorLog.log'
+
+
+#Retrieved Data
+$BHUserAccountsPath = 'Data\Retrieved\Accounts.json'
+$BHUserAccountsPath = 'Data\Retrieved\Accounts.json'
+$BHDomainPath = 'Data\Retrieved\Domain.json'
+$BHOUPath = 'Data\Retrieved\OUs.json'
+
+#Managed Data
 $BHUserHoneyAccountsPath = 'Data\Managed\HoneyAccounts.json'
-$BHOUPath = 'Data\OUs.json'
-                            
+
+#LOG Paths
+$BHLogFilePath = 'Data\Logs\AuditLog.log' 
+$BHErrorFilePath = 'Data\Logs\ErrorLog.log'
+
+#Data Generation Resources Path
 $BSFirstNamesFile = 'Data\Generation\FirstNames.txt'
 $BSLastNamesFile = 'Data\Generation\LastNames.txt'
 $BSServiceAccountNamesFile = 'Data\Generation\service-accounts.txt'
@@ -22,6 +29,7 @@ Param(
 
     if(Test-Path($BHFile))
     {
+
         $FileContents = Get-Childitem -file $BHFile  
         $Length = $FileContents.Length
 
@@ -383,6 +391,32 @@ Param (
 
 
 
+# DOMAIN DATAS
+
+Function Write-BHDomainData
+{
+Param (
+    $DomainData
+)
+    If($DomainData)
+    {
+        Write-BHJSON -BHFile $BHDomainPath -BHObjectData $DomainData
+    }
+ 
+}
+
+Function Get-BHDomainData
+{
+    
+    $Data = @()
+    $ResourcesJsonContent = Get-BHJSONObject -BHFile $BHDomainPath
+
+    return $ResourcesJsonContent
+
+}
+
+
+
 Function Write-BSEmpireConfigData
 {
 Param (
@@ -425,7 +459,7 @@ Param (
     $BSLogContent
 )
     $BSLogContentFormatted = ($(Get-Date -Format 'yyyy-MM-dd hh:mm:ss') + ' : ' + $BSLogContent)
-    $BSLogContentFormatted | Out-File $BSLogFilePath -Append
+    $BSLogContentFormatted | Out-File $BHLogFilePath -Append
 }
 
 Function Write-ErrorLog
@@ -434,7 +468,7 @@ Param (
     $BSLogContent
 )
     $BSLogContentFormatted = ($(Get-Date -Format 'yyyy-MM-dd hh:mm:ss') + ' : ' + $BSLogContent)
-    $BSLogContentFormatted | Out-File $BSErrorFilePath -Append
+    $BSLogContentFormatted | Out-File $BHErrorFilePath -Append
 }
 
 

@@ -1,13 +1,37 @@
+
+function Get-BHDomain {
+    param (
+        $DomainName = 'berg.com'
+    )
+
+    $RetrievedDomain = Get-ADDomain $DomainName
+     
+    if($RetrievedDomain)
+    {
+
+        return $RetrievedDomain
+        
+
+    }
+    else
+    {
+        return $null
+    }
+}
+
+
+
 Function Get-AllADUsers
 {
     param(
-        $HoneyExtensionField = 'OtherName'
+        $HoneyExtensionField = 'OtherName',
+        $DomainController = 'BC-DC.berg.com'
     )
         
 
     try {
     
-        $Users = Get-ADUser -filter * -Properties "OtherName","PrimaryGroup"
+        $Users = Get-ADUser -filter * -Properties "OtherName","PrimaryGroup" -Server $DomainController
         return $Users    
     }
     catch {
@@ -20,8 +44,12 @@ Function Get-AllADUsers
 
 Function Get-AllADOrganizationalUnits
 {
+    param(
+        $DomainController = 'BC-DC.berg.com'
+    )
+
     try{
-        $OUs = Get-ADOrganizationalUnit -Filter * -Properties DistinguishedName
+        $OUs = Get-ADOrganizationalUnit -Filter * -Properties DistinguishedName -Server $DomainController
         return $OUs
     }
     catch
@@ -38,11 +66,12 @@ Function Get-HoneyADusers
 {
     param(
         $HoneyExtensionField = 'OtherName',
-        $HoneyExtensionCode = '1337'
+        $HoneyExtensionCode = '1337',
+        $DomainController = 'bc-dc.berg.com'
     )
 
     try {
-        $Users = Get-ADUser -Filter ("$HoneyExtensionField -eq $HoneyExtensionCode") -Properties  "OtherName"
+        $Users = Get-ADUser -Filter ("$HoneyExtensionField -eq $HoneyExtensionCode") -Properties  "OtherName" -Server $DomainController
         return $Users
     }
     catch {
@@ -102,8 +131,8 @@ Function Deploy-HoneyUserAccount
 
         $Exception = $_.Exception
         $ExceptionMessage = $Exception.Message
-        Write-AuditLog ("Failed to Create Random User: $($RandomUserDetails.samaccountname) OK!")
-        Write-ErrorLog ("Failed to Create Random User: $($RandomUserDetails.samaccountname) OK!")
+        Write-AuditLog ("Failed to Create Random User: $($RandomUserDetails.samaccountname)!")
+        Write-ErrorLog ("Failed to Create Random User: $($RandomUserDetails.samaccountname)!")
         Write-ErrorLog $ExceptionMessage
         return $null
     }
