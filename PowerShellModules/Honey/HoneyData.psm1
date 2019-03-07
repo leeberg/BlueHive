@@ -11,22 +11,21 @@
 
 
 #Retrieved Data
-$BHUserAccountsPath = 'C:\Users\lee\git\BlueHive\Data\Retrieved\Accounts.json'
-$BHUserAccountsPath = 'C:\Users\lee\git\BlueHive\Data\Retrieved\Accounts.json'
-$BHDomainPath = 'C:\Users\lee\git\BlueHive\Data\Retrieved\Domain.json'
-$BHOUPath = 'C:\Users\lee\git\BlueHive\Data\Retrieved\OUs.json'
+$BHUserAccountsPath = 'C:\Users\bergda\BlueHive\Data\Retrieved\Accounts.json'
+$BHDomainPath = 'C:\Users\bergda\BlueHive\Data\Retrieved\Domains'
+$BHOUPath = 'C:\Users\bergda\BlueHive\Data\Retrieved\OUs.json'
 
 #Managed Data
-$BHUserHoneyAccountsPath = 'C:\Users\lee\git\BlueHive\Data\Managed\HoneyAccounts.json'
+$BHUserHoneyAccountsPath = 'C:\Users\bergda\BlueHive\Data\Managed\HoneyAccounts.json'
 
 #LOG Paths
-$BHLogFilePath = 'C:\Users\lee\git\BlueHive\Data\Logs\AuditLog.log' 
-$BHErrorFilePath = 'C:\Users\lee\git\BlueHive\Data\Logs\ErrorLog.log'
+$BHLogFilePath = 'C:\Users\bergda\BlueHive\Data\Logs\AuditLog.log' 
+$BHErrorFilePath = 'C:\Users\bergda\BlueHive\Data\Logs\ErrorLog.log'
 
 #Data Generation Resources Path
-$BSFirstNamesFile = 'C:\Users\lee\git\BlueHive\Data\Generation\FirstNames.txt'
-$BSLastNamesFile = 'C:\Users\lee\git\BlueHive\Data\Generation\LastNames.txt'
-$BSServiceAccountNamesFile = 'C:\Users\lee\git\BlueHive\Data\Generation\service-accounts.txt'
+$BSFirstNamesFile = 'C:\Users\bergda\BlueHive\Data\Generation\FirstNames.txt'
+$BSLastNamesFile = 'C:\Users\bergda\BlueHive\Data\Generation\LastNames.txt'
+$BSServiceAccountNamesFile = 'C:\Users\bergda\BlueHive\Data\Generation\service-accounts.txt'
 
 Function Get-BHJSONObject 
 {
@@ -42,6 +41,11 @@ Param(
 
         iF($Length -ne 0)
         {
+            ###WTF - Differences in different version of get-aduser??
+            # Generic Function should clean on write
+            $RawData = (Get-Content $BHFile -raw)
+           
+
             $JsonObject = ConvertFrom-Json -InputObject (Get-Content $BHFile -raw)
             return $JsonObject
         }
@@ -281,7 +285,7 @@ Function Get-BHHoneyAccounts()
 {
 
     $Data = @()
-    $ResourcesJsonContent = Get-BHTextFile  $BHUserAccountsPath
+    $ResourcesJsonContent = Get-BHTextFile  $BHUserHoneyAccountsPath
     
 
     <#
@@ -370,7 +374,9 @@ Function Write-BHUserAccountData
 Param (
     $AccountData
 )
-    
+    # TODO - wtf weridness in different version of AD MOdules?
+    # STUDPID $AccountData = $AccountData.Replace('ObjectGUID','ObjectGUIDCAP')
+
     Write-BHJSON -BHFile $BHUserAccountsPath -BHObjectData $AccountData
 
 }
@@ -381,8 +387,11 @@ Function Write-BHUserHoneyAccountData
 Param (
     $AccountData
 )
+    if($AccountData)
+    {
+        Write-BHJSON -BHFile $BHUserHoneyAccountsPath -BHObjectData $AccountData
+    }
     
-    Write-BHJSON -BHFile $BHUserHoneyAccountsPath -BHObjectData $AccountData
 
 }
 
@@ -405,9 +414,23 @@ Function Write-BHDomainData
 Param (
     $DomainData
 )
+
     If($DomainData)
     {
-        Write-BHJSON -BHFile $BHDomainPath -BHObjectData $DomainData
+        $DomainName = $DomainData.NetBIOSName
+        $DomainNameFilePath = ($BHDomainPath + '\' + $DomainName + '.json')
+
+        if(Test-Path($DomainNameFilePath))
+        {
+             # Clear Existings
+            Clear-Content $DomainNameFilePath -Force
+        }
+        else 
+        {
+            # Does not Exist
+        }
+
+        Write-BHJSON -BHFile $DomainNameFilePath -BHObjectData $DomainData
     }
  
 }
@@ -415,50 +438,29 @@ Param (
 Function Get-BHDomainData
 {
     
-    $Data = @()
-    $ResourcesJsonContent = Get-BHJSONObject -BHFile $BHDomainPath
+    $DomainData = @()
 
-    return $ResourcesJsonContent
+    $DomainJsonFiles = Get-ChildItem -Path $BHDomainPath
+    
+    foreach($File in $DomainJsonFiles)
+    {
+       
+        $ResourcesJsonContent = Get-BHJSONObject -BHFile $File.FullName
+        $DomainData = $DomainData + $ResourcesJsonContent
 
-}
+    }
 
-
-
-Function Write-BSEmpireConfigData
-{
-Param (
-    $BHObjectData        
-)
-    Clear-BSJON -BHFile $EmpireConfigFilePath
-    Write-BHJSON -BHFile $EmpireConfigFilePath -BHObjectData $BHObjectData
-
-
-}
-
-Function Write-BSEmpireModuleData
-{
-Param (
-    $BHObjectData        
-)
-    Clear-BSJON -BHFile $EmpireModuleFilePath
-    Write-BHJSON -BHFile $EmpireModuleFilePath -BHObjectData $BHObjectData
     
 
+    return $DomainData
+
 }
 
 
 
 
 
-Function Write-BSNetworkScanData
-{
-Param (
-    $BHObjectData        
-)
-    Clear-BSJON -BHFile $NetworkScanFilePath
-    Write-BHJSON -BHFile $NetworkScanFilePath -BHObjectData $BHObjectData
-    
-}
+
 
 Function Write-AuditLog
 {
@@ -508,6 +510,22 @@ Function Clear-BHUserHoneyAccountData
     }
 }
 
+
+
+
+Function Clear-AllADOrganizationalUnits
+{
+    if(Test-Path($BHOUPath))
+    {
+         # Clear Existings
+        Clear-Content $BHOUPath -Force
+    }
+    else 
+    {
+        # Does not Exist
+    }
+
+}
 
 
 

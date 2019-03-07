@@ -419,11 +419,17 @@ Function Save-AllADUsers
     try{
         $UserObjects = Get-AllADUsers -DomainController $DomainController
         Clear-BHUserAccountData
+        Write-BHUserAccountData -AccountData $UserObjects
+
     }
     catch{
-        #derp
+        $Exception = $_.Exception
+        $ExceptionMessage = $Exception.Message
+        Write-AuditLog ("Failed to Save-AllADUsers!")
+        Write-ErrorLog ("Failed to Save-AllADUsers: $($ExceptionMessage) -- $($Exception.InnerException)")
+        return $null
     }
-    Write-BHUserAccountData -AccountData $UserObjects
+    
     
 
 }
@@ -447,12 +453,24 @@ Function Save-AllADHoneyUsers
     try{ 
         $UserObjects = Get-HoneyADusers -DomainController $DomainController
         Clear-BHUserHoneyAccountData
+        If($UserObjects)
+        {
+            Write-BHUserHoneyAccountData -AccountData $UserObjects
+        }
+        else {
+            Write-AuditLog "Could Not Find ANY Honey Users!"
+        }
+
     }
     catch{
-        #todo derp
+        $Exception = $_.Exception
+        $ExceptionMessage = $Exception.Message
+        Write-AuditLog ("Failed to Save-AllADHoneyUsers!")
+        Write-ErrorLog ("Failed to Save-AllADHoneyUsers: $($ExceptionMessage) -- $($Exception.InnerException)")
+        return $null
     }
     
-    Write-BHUserHoneyAccountData -AccountData $UserObjects
+   
     
 
 }
@@ -470,16 +488,21 @@ Function Save-AllADOUs
         $DomainController = 'bc-dc.berg.com'
     )
    
-
     try {
         $OUs = Get-AllADOrganizationalUnits -DomainController $DomainController
         Clear-AllADOrganizationalUnits
+        Write-BHOUData -OUData $OUs
     }
     catch {
-        
-        Write-BHOUData -OUData $OUs
-    
+        $Exception = $_.Exception
+        $ExceptionMessage = $Exception.Message
+        Write-AuditLog ("Failed to Save-AllADOUs!")
+        Write-ErrorLog ("Failed to Save-AllADOUs: $($ExceptionMessage) -- $($Exception.InnerException)")
+        return $null
     }
+
+    
+
     
 }
 
@@ -495,7 +518,6 @@ Function Invoke-BHFullADSync
     
     #>
 
-
     Param(
         $DomainController = 'BC-DC.berg.com'
         
@@ -509,10 +531,10 @@ Function Invoke-BHFullADSync
     Save-AllADUsers -DomainController $DomainController
 
     Write-AuditLog -BSLogContent "Syncing Existing Honey Accounts from: $($DomainController)"
-    Save-AllADHoneyUsers  -DomainController $DomainController
+    Save-AllADHoneyUsers -DomainController $DomainController
 
     Write-AuditLog -BSLogContent "Syncing OUs from: $($DomainController)"
-    Save-AllADOUs  -DomainController $DomainController
+    Save-AllADOUs -DomainController $DomainController
 
     Write-AuditLog -BSLogContent "AD Sync Complete!"
 }
