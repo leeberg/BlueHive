@@ -1,3 +1,9 @@
+<# TODO 
+
+Figure out how creds / sessions actually work in UD / migrate to IIS BAY BEE
+2019-03-06 10:08:22 : Access is denied -- System.ServiceModel.FaultException: The operation failed due to insufficient access rights.
+
+#>
 
 function Get-BHDomain {
     param (
