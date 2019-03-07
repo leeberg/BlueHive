@@ -526,6 +526,6 @@ Function Invoke-BHFullADSync
 
 ##### Testing Zone
 
-#Deploy-HoneyUserAccount
+#Invoke-HoneyUserAccount
 #Get-RandomServiceAccount
 #Get-RandomPerson

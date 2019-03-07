@@ -99,15 +99,15 @@ Function Set-ExtensionAttribute
 }
 
 
-
-
-Function Deploy-HoneyUserAccount
+# todo - BAD NAME - 
+Function Invoke-HoneyUserAccount
 {   
     
     param(
         $HoneyExtensionField = 'OtherName',
         $HoneyExtensionCode = '1337',
-        $HoneyUserOu = 'OU=ActivtySimulatorUsers,OU=Demo Users,DC=berg,DC=com'
+        $HoneyUserOu = 'OU=ActivtySimulatorUsers,OU=Demo Users,DC=berg,DC=com',
+        $DomainController = 'BC-DC.berg.com'
     )
     ### TODO PAram all the thigns but randomize it if none provided
 
@@ -116,11 +116,12 @@ Function Deploy-HoneyUserAccount
     
     
     try {
-    
+        
+        # TODO - Consider Optional WEAK Password List for the Honey User
         $RandomPassword = ConvertTo-SecureString -String (([char[]]([char]33..[char]95) + ([char[]]([char]97..[char]126)) + 0..9 | sort {Get-Random})[0..8] -join '') -AsPlainText -Force
-        $HoneyUser = New-ADUser -Name $RandomUserDetails.samaccountname -GivenName $RandomUserDetails.firstname -Surname $RandomUserDetails.lastname -EmailAddress $RandomUserDetails.email -DisplayName $RandomUserDetails.displayname -Enabled $true -AccountPassword $RandomPassword -Path $HoneyUserOu -PassThru 
-        Set-ADUser -Identity $HoneyUser.DistinguishedName -OtherName $HoneyExtensionCode
-        $HoneyUserDetails = Get-ADUser -Identity $HoneyUser.DistinguishedName -Properties *
+        $HoneyUser = New-ADUser -Name $RandomUserDetails.samaccountname -GivenName $RandomUserDetails.firstname -Surname $RandomUserDetails.lastname -EmailAddress $RandomUserDetails.email -DisplayName $RandomUserDetails.displayname -Enabled $true -AccountPassword $RandomPassword -Path $HoneyUserOu -PassThru -Server $DomainController
+        Set-ADUser -Identity $HoneyUser.DistinguishedName -OtherName $HoneyExtensionCode -Server $DomainController
+        $HoneyUserDetails = Get-ADUser -Identity $HoneyUser.DistinguishedName -Properties * -Server $DomainController
 
         Write-AuditLog ("Created Random User: $($RandomUserDetails.samaccountname) OK!")
 
@@ -133,7 +134,7 @@ Function Deploy-HoneyUserAccount
         $ExceptionMessage = $Exception.Message
         Write-AuditLog ("Failed to Create Random User: $($RandomUserDetails.samaccountname)!")
         Write-ErrorLog ("Failed to Create Random User: $($RandomUserDetails.samaccountname)!")
-        Write-ErrorLog $ExceptionMessage
+        Write-ErrorLog ("$($ExceptionMessage) -- $($Exception.InnerException)")
         return $null
     }
     

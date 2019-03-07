@@ -18,6 +18,9 @@ New-UDPage -Name "Domain Connection" -Icon server -Content {
 
     
 
+    # TODO - should do something about being able to sync with a domain even
+    # Though my workstation is not domain joined. 
+    
 
     New-UDInput -Title "Domain Sync" -Id "HoneyDomainInput" -Content {
         

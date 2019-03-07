@@ -1,11 +1,10 @@
-<#
-$Credential = Get-Credential
-#>
 
+#First Time Setup DEbug
+#DERP
+$Credential = Get-Credential
 $session = New-PSSession -ComputerName "192.168.200.130" -Credential $Credential
 Invoke-Command $session -Scriptblock { Import-Module ActiveDirectory }
 Import-PSSession -Session $session -module ActiveDirectory -AllowClobber
-
 
 
 Import-Module .\bluehive.psd1 -Force

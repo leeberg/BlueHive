@@ -1,21 +1,22 @@
 ﻿
 $OUs = Get-BHOuData
-
+$Domains = Get-BHDomainData
 
 New-UDPage -Name "Honey Deployment" -Icon empire -Content {
         
     New-UDInput -Title "Deploy Honey User" -Id "HoneyUserInput" -Content {
         
         New-UDInputField -Type 'select' -Name 'DeploymentOU' -Values $OUs.DistinguishedName -DefaultValue "Null" -Placeholder "Select an OU to Deploy User Into"
+        ### TODO - should be a DOMAIN SELECT!!!
+        New-UDInputField -Type 'select' -Name 'DeploymentDC' -Values $Domains.InfrastructureMaster -DefaultValue "Null" -Placeholder "Select an DC to Deploy User with"
 
     } -Endpoint {
-        param($DeploymentOU)
+        param($DeploymentOU,$DeploymentDC)
 
-        Write-AuditLog -BSLogContent "Attempting to Create Honey User in OU: $DeploymentOU OU"
+        Write-AuditLog -BSLogContent "Attempting to Create Honey User in OU: $DeploymentOU OU - Using: $DeploymentDC"
 
-
-        $NewHoneyUser = Deploy-HoneyUserAccount -HoneyUserOu $DeploymentOU
-        
+        $NewHoneyUser = Invoke-HoneyUserAccount -HoneyUserOu $DeploymentOU
+       
         If($NewHoneyUser)
         {
             Show-UDModal -Content {

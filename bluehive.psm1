@@ -1,5 +1,6 @@
 ﻿function Start-BHDash {
     
+
     Write-AuditLog -BSLogContent "Starting BlueHive!"
 
     $Pages = @()
@@ -10,8 +11,8 @@
     }
     
     $BSEndpoints = New-UDEndpointInitialization -Module @("PowerShellModules\Honey\Honey.psm1", "PowerShellModules\Honey\HoneyAD.psm1", "PowerShellModules\Honey\HoneyData.psm1")
-
     $Dashboard = New-UDDashboard -Title "BlueHive 🐝 🍯 🐝" -Pages $Pages -EndpointInitialization $BSEndpoints 
+
     Try{
         Start-UDDashboard -Dashboard $Dashboard -Port 10000 
         Write-AuditLog -BSLogContent "BlueHive Started!"

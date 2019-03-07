@@ -1,25 +1,32 @@
 #### All functions need to have proper function params, synopsis, help, etc....
 #### Also where my psd1 file at
 
+# TODO Serious issues with these data file paths NOT working
+# Powershell pathing 
+# Code works good - running from ps fails
+
+
+# TODO Fix this horrible mess
+
 
 
 #Retrieved Data
-$BHUserAccountsPath = 'Data\Retrieved\Accounts.json'
-$BHUserAccountsPath = 'Data\Retrieved\Accounts.json'
-$BHDomainPath = 'Data\Retrieved\Domain.json'
-$BHOUPath = 'Data\Retrieved\OUs.json'
+$BHUserAccountsPath = 'C:\Users\lee\git\BlueHive\Data\Retrieved\Accounts.json'
+$BHUserAccountsPath = 'C:\Users\lee\git\BlueHive\Data\Retrieved\Accounts.json'
+$BHDomainPath = 'C:\Users\lee\git\BlueHive\Data\Retrieved\Domain.json'
+$BHOUPath = 'C:\Users\lee\git\BlueHive\Data\Retrieved\OUs.json'
 
 #Managed Data
-$BHUserHoneyAccountsPath = 'Data\Managed\HoneyAccounts.json'
+$BHUserHoneyAccountsPath = 'C:\Users\lee\git\BlueHive\Data\Managed\HoneyAccounts.json'
 
 #LOG Paths
-$BHLogFilePath = 'Data\Logs\AuditLog.log' 
-$BHErrorFilePath = 'Data\Logs\ErrorLog.log'
+$BHLogFilePath = 'C:\Users\lee\git\BlueHive\Data\Logs\AuditLog.log' 
+$BHErrorFilePath = 'C:\Users\lee\git\BlueHive\Data\Logs\ErrorLog.log'
 
 #Data Generation Resources Path
-$BSFirstNamesFile = 'Data\Generation\FirstNames.txt'
-$BSLastNamesFile = 'Data\Generation\LastNames.txt'
-$BSServiceAccountNamesFile = 'Data\Generation\service-accounts.txt'
+$BSFirstNamesFile = 'C:\Users\lee\git\BlueHive\Data\Generation\FirstNames.txt'
+$BSLastNamesFile = 'C:\Users\lee\git\BlueHive\Data\Generation\LastNames.txt'
+$BSServiceAccountNamesFile = 'C:\Users\lee\git\BlueHive\Data\Generation\service-accounts.txt'
 
 Function Get-BHJSONObject 
 {
