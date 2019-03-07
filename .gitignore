@@ -16,3 +16,9 @@ test.ps1
 adtesting.ps1
 test.md
 Data/Managed/HoneyAccounts.json
+Data/Managed/HoneyAccounts.json
+Data/Retrieved/Accounts.json
+Data/Retrieved/Domain.json
+Data/Retrieved/OUs.json
+Data/Logs/ErrorLog.log
+Data/Logs/AuditLog.log
