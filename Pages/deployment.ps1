@@ -19,12 +19,15 @@ New-UDPage -Name "Honey Deployment" -Icon empire -Content {
        
         If($NewHoneyUser)
         {
+
+            Write-DeploymentHistoryLog -Description "Deployed: $($NewHoneyUser.SamAccountname) to: $DeploymentDC" -Type "Deployment"
+
             Show-UDModal -Content {
                 New-UDHeading -Size 4 -Text "Honey User Deployment"
                 New-UDHeading -Size 6 -Text "Honey User: $($NewHoneyUser.SamAccountname) Created!"
                 
-                New-UDTable -Title "Agent Results" -Headers @("DisplayName", "DistinguishedName","SID") -Style striped -Endpoint {
-                    $NewHoneyUser | Out-UDTableData -Property @("DisplayName", "DistinguishedName","SID")
+                New-UDTable -Title "Agent Results" -Headers @("DisplayName", "DistinguishedName") -Style striped -Endpoint {
+                    $NewHoneyUser | Out-UDTableData -Property @("DisplayName", "DistinguishedName")
                     
                 }
             }

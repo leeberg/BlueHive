@@ -14,6 +14,12 @@ New-UDPage -Name "Domain Connection" -Icon server -Content {
             Get-BHDomainData | Out-UDGridData
         }
     }
+    else
+    {
+
+        Write-AuditLog -BSLogContent "Domain Connection Page DID NOT FIND Existing Domain Data!"
+
+    }
 
 
     
@@ -34,7 +40,7 @@ New-UDPage -Name "Domain Connection" -Icon server -Content {
             Write-AuditLog -BSLogContent "Attempting to Connect to Domain: $txtboxDomain"
             
             ### Do the Domain Get Here
-            $FoundDomain = Get-BHDomain -DomainName $txtboxDomain
+            $FoundDomain = Get-BHDomain -DomainName $txtboxDomain 
 
             If($FoundDomain)
             {

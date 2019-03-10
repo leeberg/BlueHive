@@ -1,7 +1,35 @@
 ﻿function Start-BHDash {
-    
+
+    param(
+        [string]$Server,
+        [PSCredential]$Credential,
+        [int]$Port = 10000
+    )
 
     Write-AuditLog -BSLogContent "Starting BlueHive!"
+
+    #$Cache:Loading = $true
+    #$Cache:ChartColorPalette = @('#5899DA', '#E8743B', '#19A979', '#ED4A7B', '#945ECF', '#13A4B4', '#525DF4', '#BF399E', '#6C8893', '#EE6868', '#2F6497')
+    
+    $Cache:ConnectionInfo = @{
+        Server = $Server
+        Credential = $Credential
+    }
+
+    Import-Module ActiveDirectory
+
+    Try{
+        #TODO Double Call - probably better way.
+        Get-PSDrive -Name AD | Remove-PSDrive
+    }
+    Catch {
+        # Probably not there yet.
+    }
+    
+
+    
+    New-PSDrive –Name AD –PSProvider ActiveDirectory @Cache:ConnectionInfo –Root "//RootDSE/" -Scope Global 
+
 
     $Pages = @()
     $Pages += . (Join-Path $PSScriptRoot "pages\home.ps1")

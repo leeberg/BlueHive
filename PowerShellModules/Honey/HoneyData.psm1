@@ -11,21 +11,24 @@
 
 
 #Retrieved Data
-$BHUserAccountsPath = 'C:\Users\bergda\BlueHive\Data\Retrieved\Accounts.json'
-$BHDomainPath = 'C:\Users\bergda\BlueHive\Data\Retrieved\Domains'
-$BHOUPath = 'C:\Users\bergda\BlueHive\Data\Retrieved\OUs.json'
+$BHUserAccountsPath = 'C:\Users\lee\git\BlueHive\Data\Retrieved\Accounts.json'
+$BHDomainPath = 'C:\Users\lee\git\BlueHive\Data\Retrieved\Domains'
+$BHOUPath = 'C:\Users\lee\git\BlueHive\Data\Retrieved\OUs.json'
+$BHDomainControllersPath = 'C:\Users\lee\git\BlueHive\Data\Retrieved\DCs.json'
 
 #Managed Data
-$BHUserHoneyAccountsPath = 'C:\Users\bergda\BlueHive\Data\Managed\HoneyAccounts.json'
+$BHUserHoneyAccountsPath = 'C:\Users\lee\git\BlueHive\Data\Managed\HoneyAccounts.json'
 
 #LOG Paths
-$BHLogFilePath = 'C:\Users\bergda\BlueHive\Data\Logs\AuditLog.log' 
-$BHErrorFilePath = 'C:\Users\bergda\BlueHive\Data\Logs\ErrorLog.log'
+$BHLogFilePath = 'C:\Users\lee\git\BlueHive\Data\Logs\AuditLog.log' 
+$BHErrorFilePath = 'C:\Users\lee\git\BlueHive\Data\Logs\ErrorLog.log'
+$BHDeploymentHistoryFilePath = 'C:\Users\lee\git\BlueHive\Data\Logs\Deployment.json'
+
 
 #Data Generation Resources Path
-$BSFirstNamesFile = 'C:\Users\bergda\BlueHive\Data\Generation\FirstNames.txt'
-$BSLastNamesFile = 'C:\Users\bergda\BlueHive\Data\Generation\LastNames.txt'
-$BSServiceAccountNamesFile = 'C:\Users\bergda\BlueHive\Data\Generation\service-accounts.txt'
+$BSFirstNamesFile = 'C:\Users\lee\git\BlueHive\Data\Generation\FirstNames.txt'
+$BSLastNamesFile = 'C:\Users\lee\git\BlueHive\Data\Generation\LastNames.txt'
+$BSServiceAccountNamesFile = 'C:\Users\lee\git\BlueHive\Data\Generation\service-accounts.txt'
 
 Function Get-BHJSONObject 
 {
@@ -176,109 +179,14 @@ Function Get-BHHoneyAccountData()
 
 
 
-
-Function Get-BSEmpireConfigData()
+Function Get-BHDeploymentHistoryData()
 {
 
-    $Data = @()
-    $ResourcesJsonContent = Get-BHJSONObject -BHFile $EmpireConfigFilePath
+    $ResourcesJsonContent = Get-BHJSONObject -BHFile $BHDeploymentHistoryFilePath
 
-    #### Data Stuff
-    foreach($Resource in $ResourcesJsonContent)
-    {
-        $Data = $Data +[PSCustomObject]@{
-            empire_host=($Resource.empire_host);
-            empire_port=($Resource.empire_port);
-            empire_token=($Resource.empire_token);
-            api_username=($Resource.api_username);
-            install_path=($Resource.install_path);
-            version=($Resource.version);
-            sync_time=($Resource.sync_time)
-        }
-    }
-
-    return $Data
-
-
-}
-
-
-Function Get-BSEmpireModuleData()
-{
+    return $ResourcesJsonContent    
     
-    $Data = @()
-    $Options = @()
-    $FirstPartOfDefinition = '^.*=@{Description='
-    $SecondPartOfDefinition = ';.*;.*Value=.*}'
-
-    $ResourcesJsonContent = Get-BHJSONObject -BHFile $EmpireModuleFilePath
-
-    #### Data Stuff
-    foreach($Module in $ResourcesJsonContent)
-    {
-
-        #Propertize the Module Objects
-        $ModuleOptionsObject = @()
-        $ModuleOptions = $Module.options 
-        
-        $ModuleOptionsNotes = $ModuleOptions | Get-Member -MemberType NoteProperty
-        ForEach($Note in $ModuleOptionsNotes)
-        {
-
-            $OptionDefinitionFormatted = $Note.Definition
-            $OptionDefinitionFormatted = $OptionDefinitionFormatted -replace $FirstPartOfDefinition," "
-            $OptionDefinitionFormatted = $OptionDefinitionFormatted -replace $SecondPartOfDefinition,""
-
-            $ModuleOptionsObject = $ModuleOptionsObject +[PSCustomObject]@{
-                Name=($Note.Name);
-                Definition=($OptionDefinitionFormatted);
-            }
-        }
-
-
-        $Data = $Data +[PSCustomObject]@{
-            Name=($Module.name);
-            Author=($Module.Author);
-            Description=($Module.Description);
-            Language=($Module.Language);
-            NeedsAdmin=($Module.NeedsAdmin);
-            OpsecSafe=($Module.OpsecSafe);
-            Options=($ModuleOptionsObject);
-        }
-    }
-
-
-
-    return $Data
-
-
 }
-
-
-Function Get-BSNetworkScanData()
-{
-
-    $Data = @()
-    $ResourcesJsonContent = Get-BHJSONObject -BHFile $NetworkScanFilePath
-        
-    #### Data Stuff
-    foreach($Resource in $ResourcesJsonContent)
-    {
-        $Data = $Data +[PSCustomObject]@{
-            HostName=($Resource.Hostname);
-            IPv4=($Resource.IPv4);
-            Status=($Resource.Status);
-            Computer=(New-UDLink -Text "RDP" -Url "remotedesktop://$Resource.IPv4");
-            Note="";
-            LastScan=($Resource.ScanTime.DateTime);
-            isEmpire=($Resource.EmpireServer);
-        }
-    }
-       
-    return $Data
-
-}
-
 
 
 Function Get-BHHoneyAccounts()
@@ -382,6 +290,19 @@ Param (
 }
 
 
+Function Write-BHADDomainControllers
+{
+    Param (
+        $DomainControllers
+    )
+        # TODO - wtf weridness in different version of AD MOdules?
+        # STUDPID $AccountData = $AccountData.Replace('ObjectGUID','ObjectGUIDCAP')
+    
+        Write-BHJSON -BHFile $BHDomainControllersPath -BHObjectData $DomainControllers
+    
+}
+
+
 Function Write-BHUserHoneyAccountData
 {
 Param (
@@ -458,8 +379,47 @@ Function Get-BHDomainData
 
 
 
+Function Write-DeploymentHistoryLog
+{
+    Param (
+            [string]$Description,
+            [string]$Type
+    )
+
+   
+    #### Create PS Object
+    $DeploymentRecordObject = [PSCustomObject]@{
+        id=([guid]::NewGuid());
+        description=($Description);
+        type=($Type);
+        timestamp=(Get-Date -Format u);
+        
+    }
+
+    $NewJsonObject = @()
 
 
+    #TODO - Get JSON and update it  - probably not very managable... but w/e
+    if(Test-Path -Path $BHDeploymentHistoryFilePath)
+    {
+        if(Get-Content $BHDeploymentHistoryFilePath -raw)
+        {
+            $JsonObject = ConvertFrom-Json -InputObject (Get-Content $BHDeploymentHistoryFilePath -raw)
+            $NewJsonObject += $JsonObject
+        }
+        $NewJsonObject += $DeploymentRecordObject
+        Clear-Content $BHDeploymentHistoryFilePath
+    }
+    else {
+        
+        $NewJsonObject = $DeploymentRecordObject
+    }
+  
+
+
+    Write-BHJSON -BHFile $BHDeploymentHistoryFilePath -BHObjectData $NewJsonObject
+
+}
 
 
 Function Write-AuditLog
@@ -494,6 +454,19 @@ Function Clear-BHUserAccountData
     }
 }
 
+
+Function Clear-BHADDomainControllers
+{
+    if(Test-Path($BHDomainControllersPath))
+    {
+         # Clear Existings
+        Clear-Content $BHDomainControllersPath -Force
+    }
+    else 
+    {
+        # Does not Exist
+    }
+}
 
 
 
