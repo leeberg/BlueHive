@@ -1,13 +1,11 @@
 #### All functions need to have proper function params, synopsis, help, etc....
 #### Also where my psd1 file at
 
-# TODO Serious issues with these data file paths NOT working
-# Powershell pathing 
-# Code works good - running from ps fails
 
-
-# TODO Fix this horrible mess
-
+# TODO 
+# When the SYNC specicies a domain - we should create a folder for it
+# Then all the info for the that domain goes in it (users, groups, computers, OUs, DCs, Accounts, Honeys, ETC.)
+# Then we must update all references to be domain aware
 
 
 #Retrieved Data
@@ -174,6 +172,21 @@ Function Get-BHHoneyAccountData()
     }
     #>
     
+    
+}
+
+
+Function Get-BHDHoneyUserDetailsData
+{
+    param(
+        [string]$DistinguishedName
+    )
+
+    $ResourcesJsonContent = Get-BHJSONObject -BHFile $BHUserHoneyAccountsPath
+
+    $UserDetails = $ResourcesJsonContent | Where-Object DistinguishedName -eq $DistinguishedName
+
+    return $UserDetails
     
 }
 

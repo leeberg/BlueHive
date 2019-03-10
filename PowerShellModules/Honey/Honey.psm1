@@ -12,7 +12,7 @@ Function Save-AllADUsers
     #>
 
     Param(
-        $DomainController = 'bc-dc.berg.com'
+        $Domain = 'berg.com'
     )
    
     try{
@@ -71,7 +71,7 @@ Function Save-AllADHoneyUsers
     #>
 
     Param(
-        $DomainController = 'bc-dc.berg.com'
+        $Domain = 'berg.com'
     )
    
     
@@ -111,7 +111,7 @@ Function Save-AllADOUs
     #>
     
     Param(
-        $DomainController = 'bc-dc.berg.com'
+        $Domain = 'berg.com'
     )
    
     try {
@@ -133,6 +133,31 @@ Function Save-AllADOUs
 }
 
 
+Function Save-ADDomain
+{
+    <#
+    .SYNOPSIS 
+    Take a Collection of Objects and save it to the JSON file
+     
+    #>
+    
+    Param(
+        $Domain = 'berg.com'
+    )
+   
+    try {
+        $DomainObject = Get-BHDomain -DomainName $Domain
+        Write-BHDomainData -DomainData $DomainObject
+    }
+    catch {
+        $Exception = $_.Exception
+        $ExceptionMessage = $Exception.Message
+        Write-AuditLog ("Failed to Save AD Domain Info!")
+        Write-ErrorLog ("Failed to Save AD Domain Info: $($ExceptionMessage) -- $($Exception.InnerException)")
+        return $null
+    }
+    
+}
 
 
 
@@ -145,22 +170,23 @@ Function Invoke-BHFullADSync
     #>
 
     Param(
-        $DomainController = 'BC-DC.berg.com'
+        $DomainToSync = 'berg.com'
         
     )
   
-
-                
     Write-AuditLog -BSLogContent "Starting AD Sync!"
-                
-    Write-AuditLog -BSLogContent "Syncing Accounts from: $($DomainController)"
-    Save-AllADUsers -DomainController $DomainController
 
-    Write-AuditLog -BSLogContent "Syncing Existing Honey Accounts from: $($DomainController)"
-    Save-AllADHoneyUsers -DomainController $DomainController
+    Write-AuditLog -BSLogContent "Syncing Domain Info from: $($DomainToSync)"
+    Save-ADDomain -Domain $DomainToSync
+             
+    Write-AuditLog -BSLogContent "Syncing Accounts from: $($DomainToSync)"
+    Save-AllADUsers -Domain $DomainToSync
 
-    Write-AuditLog -BSLogContent "Syncing Domain Controllers from: $($DomainController)"
-    Save-AllDomainControllers -DomainController $DomainController
+    Write-AuditLog -BSLogContent "Syncing Existing Honey Accounts from: $($DomainToSync)"
+    Save-AllADHoneyUsers -Domain $DomainToSync
+
+    Write-AuditLog -BSLogContent "Syncing Domain Controllers from: $($DomainToSync)"
+    Save-AllDomainControllers -Domain $DomainToSync
 
     Write-AuditLog -BSLogContent "AD Sync Complete!"
 

@@ -12,10 +12,8 @@ function Get-BHDomain {
 
     Write-AuditLog ("Running Function: Get-BHDomain")
 
-    $RetrievedDomain = Get-ADDomain $DomainName @Cache:ConnectionInfo | Select-Object -Property DistinguishedName,DNSRoot,DomainControllersContainer,DomainMode,DomainSID,Forest,InfrastructureMaster,Name,NetBIOSName,ObjectGUID, PDCEmulator,ReplicaDirectoryServers,RIDMaster,SystemsContainer,UsersContainer
+    $RetrievedDomain = Get-ADDomain $DomainName @Cache:ConnectionInfo | Select-Object -Property DistinguishedName,DNSRoot,DomainControllersContainer,DomainMode,DomainSID,Forest,InfrastructureMaster,Name,NetBIOSName,ObjectGUID, PDCEmulator,ReplicaDirectoryServers,RIDMaster,SystemsContainer,UsersContainer,@{Name="BHSyncTime"; Expression = {Get-Date -format u}}
      
-    
-
 
     if($RetrievedDomain)
     {
@@ -129,8 +127,7 @@ Function Get-HoneyADusers
     Write-AuditLog ("Running Function: Get-HoneyADusers")
 
     try {
-        $Users = Get-ADUser -Filter ("MiddleName -eq $HoneyExtensionCode") -Properties  "OtherName" @Cache:ConnectionInfo | Select-Object -Property DistinguishedName,Enabled,GivenName,Name,ObjectClass,ObjectGUID,OtherName,SamAccountName,SID,Surname,UserPrincipalName
-        #Get-ADUSer "SGeorgiev" -Properties *
+        $Users = Get-ADUser -Filter ("MiddleName -eq $HoneyExtensionCode") -Properties "DisplayName", "OtherName","whenCreated","whenChanged" @Cache:ConnectionInfo | Select-Object -Property DisplayName, whenCreated, whenChanged, DistinguishedName,Enabled,GivenName,Name,ObjectClass,ObjectGUID,OtherName,SamAccountName,SID,Surname,UserPrincipalName
         return $Users
     }
     catch {
@@ -142,12 +139,115 @@ Function Get-HoneyADusers
 }
 
 
+
+Function Set-UserPassword
+{
+    param(
+        [string]$DistinguishedName,
+        [string]$Password
+    )
+
+    Write-AuditLog ("Resetting Password for $DistinguishedName")
+    
+    try 
+    {
+        $SecurePassword = ConvertTo-SecureString $Password -AsPlainText -Force
+        Set-ADAccountPassword -Reset -NewPassword $SecurePassword -Identity $DistinguishedName @Cache:ConnectionInfo
+        Write-DeploymentHistoryLog -Description "Changed Password: for $DistinguishedName" -Type "Modification"
+    }
+    catch{
+
+        $Exception = $_.Exception
+        $ExceptionMessage = $Exception.Message
+        Write-ErrorLog -BSLogContent "Failed to Reset Password for Account: $DistinguishedName"
+        Write-ErrorLog ("$($ExceptionMessage) -- $($Exception.InnerException)")
+
+    }
+
+}
+
+
+Function Delete-BHADUser
+{
+    param(
+        [string]$DistinguishedName
+    )
+
+    Write-AuditLog ("Attempting to Delete: $DistinguishedName")
+
+    try 
+    {
+        Remove-ADUser -Identity $DistinguishedName -Confirm:$False @Cache:ConnectionInfo 
+        Write-DeploymentHistoryLog -Description "DELETED Account: $DistinguishedName" -Type "Modification"
+    }
+    catch{
+
+        $Exception = $_.Exception
+        $ExceptionMessage = $Exception.Message
+        Write-ErrorLog -BSLogContent "Failed to DELETED Account: $DistinguishedName"
+        Write-ErrorLog ("$($ExceptionMessage) -- $($Exception.InnerException)")
+
+    }
+
+}
+
+Function Set-UserState
+{
+    param(
+        [string]$DistinguishedName,
+        [string]$State
+    )
+
+    Write-AuditLog ("Changing State for $DistinguishedName to $State")
+    
+    if($State -eq "Disabled")
+    {
+        try 
+        {
+            Disable-ADAccount -Identity $DistinguishedName @Cache:ConnectionInfo
+            Write-DeploymentHistoryLog -Description "Disabled Account: $DistinguishedName" -Type "Modification"
+        }
+        catch{
+
+            $Exception = $_.Exception
+            $ExceptionMessage = $Exception.Message
+            Write-ErrorLog -BSLogContent "Failed to Disabled Account: $DistinguishedName"
+            Write-ErrorLog ("$($ExceptionMessage) -- $($Exception.InnerException)")
+    
+        }
+    
+    }
+    if($State -eq "Enabled")
+    {
+        try 
+        {
+            Enable-ADAccount -Identity $DistinguishedName @Cache:ConnectionInfo
+            Write-DeploymentHistoryLog -Description "Enabled Account: $DistinguishedName" -Type "Modification"
+        }
+        catch{
+
+            $Exception = $_.Exception
+            $ExceptionMessage = $Exception.Message
+            Write-ErrorLog -BSLogContent "Failed to Enabled Account: $DistinguishedName"
+            Write-ErrorLog ("$($ExceptionMessage) -- $($Exception.InnerException)")
+    
+        }
+    
+    }
+
+}
+
+
+
+
+
 Function Set-ExtensionAttribute
 {
     Param(
         $ObjectDN = 'CN=Alexandria Jomes,OU=ActivtySimulatorUsers,OU=Demo Users,DC=berg,DC=com'
     )
 
+    # TODO GOTTA MAKE THIS MORE FLEXIBLE
     Write-AuditLog ("Running Function: Set-ExtensionAttribute")
 
     try {

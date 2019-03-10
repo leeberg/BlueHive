@@ -10,9 +10,23 @@ New-UDPage -Name "Domain Connection" -Icon server -Content {
     if($ExistingDomainConfiguration)
     {
         Write-AuditLog -BSLogContent "Domain Connection Page found Existing Domain Data!"
-        New-UDGrid -Title "Existing Domain Connection" -Headers @("Name", "DistinguishedName", "Forest", "Domain Controller") -Properties @("Name", "DistinguishedName", "Forest","InfrastructureMaster") -Endpoint {    
-            Get-BHDomainData | Out-UDGridData
-        }
+        New-UDGrid -Title "Existing Domain Connection" -Headers @("Name", "DistinguishedName", "Forest", "Domain Controller", "Last Sync", " ") -Properties @("Name", "DistinguishedName", "Forest","InfrastructureMaster", "LastSync", "Sync") -Endpoint {
+            $ExistingDomainConfiguration | ForEach-Object{    
+
+                [PSCustomObject]@{
+                    Name = $_.Name
+                    DistinguishedName = $_.DistinguishedName
+                    Forest = $_.Forest
+                    InfrastructureMaster = $_.InfrastructureMaster
+                    LastSync = $_.BHSyncTime
+                    Sync = New-UDButton -Text "Sync" -OnClick (New-UDEndpoint -Endpoint {                        
+                        $DomainController = $ArgumentList[0]
+                        Invoke-BHFullADSync -DomainController $DomainController
+                    } -ArgumentList $_.InfrastructureMaster)
+                }
+            } | Out-UDGridData
+        } 
+                        
     }
     else
     {
@@ -28,7 +42,7 @@ New-UDPage -Name "Domain Connection" -Icon server -Content {
     # Though my workstation is not domain joined. 
     
 
-    New-UDInput -Title "Domain Sync" -Id "HoneyDomainInput" -Content {
+    New-UDInput -Title "New Domain Sync" -Id "HoneyDomainInput" -Content {
         
         New-UDInputField -Type 'textbox' -Name 'txtboxDomain' -DefaultValue "Null" -Placeholder "Enter your Domain"
 
@@ -46,10 +60,8 @@ New-UDPage -Name "Domain Connection" -Icon server -Content {
             {
                 Write-AuditLog -BSLogContent "Found Domain: $($FoundDomain.DistinguishedName)!"
                 
-                ### Save Data
-                Write-BHDomainData -DomainData $FoundDomain
-                
-                Invoke-BHFullADSync -DomainController $($FoundDomain.InfrastructureMaster)
+                # DO SYNC
+                Invoke-BHFullADSync -Domain $FoundDomain
 
                 New-UDGrid -Title "Domain Information" -Headers @("Name", "DistinguishedName", "Forest", "InfrastructureMaster") -Properties @("Name", "DistinguishedName", "Forest","InfrastructureMaster") -Endpoint {    
                 Get-BHDomainData | Out-UDGridData
@@ -70,12 +82,6 @@ New-UDPage -Name "Domain Connection" -Icon server -Content {
             New-UDInputAction -Toast "Enter a Valid Domain Name"
         }
         
-
-
-        
-        
-
-
 
   
     }    
