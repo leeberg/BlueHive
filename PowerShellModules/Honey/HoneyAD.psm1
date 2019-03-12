@@ -29,6 +29,7 @@ function Get-BHDomain {
 }
 
 function Get-BHAllDomains {
+
     
     Write-AuditLog ("Running Function: Get-BHAllDomains")
 
@@ -51,7 +52,7 @@ Function Get-AllADUsers
 {
     param(
         $HoneyExtensionField = 'OtherName',
-        $DomainController = 'BC-DC.berg.com'
+        $Domain = 'berg.com'
     )
         
     Write-AuditLog ("Running Function: Get-AllADUsers")
@@ -74,7 +75,7 @@ Function Get-AllADUsers
 Function Get-AllADOrganizationalUnits
 {
     param(
-        $DomainController = 'BC-DC.berg.com'
+        $Domain = ''
     )
 
     Write-AuditLog ("Running Function: Get-AllADOrganizationalUnits")
@@ -97,6 +98,9 @@ Function Get-AllADOrganizationalUnits
 
 Function Get-BHADDomainControllers
 {
+    param(
+        $Domain = ''
+    )
    
     Write-AuditLog ("Running Function: Get-BHADDomainControllers")
 
@@ -116,18 +120,17 @@ Function Get-BHADDomainControllers
 
 Function Get-HoneyADusers
 {
-    
 
     param(
         $HoneyExtensionField = 'OtherName',
         $HoneyExtensionCode = '1337',
-        $DomainController = 'bc-dc.berg.com'
+        $Domain = ''
     )
 
     Write-AuditLog ("Running Function: Get-HoneyADusers")
 
     try {
-        $Users = Get-ADUser -Filter ("MiddleName -eq $HoneyExtensionCode") -Properties "DisplayName", "OtherName","whenCreated","whenChanged" @Cache:ConnectionInfo | Select-Object -Property DisplayName, whenCreated, whenChanged, DistinguishedName,Enabled,GivenName,Name,ObjectClass,ObjectGUID,OtherName,SamAccountName,SID,Surname,UserPrincipalName
+        $Users = Get-ADUser -Filter ("MiddleName -eq $HoneyExtensionCode") -Properties "DisplayName", "OtherName","whenCreated","whenChanged" @Cache:ConnectionInfo | Select-Object -Property DisplayName, whenCreated, whenChanged, DistinguishedName,Enabled,GivenName,Name,ObjectClass,ObjectGUID,OtherName,SamAccountName,SID,Surname,UserPrincipalName,@{Name="BHSyncTime"; Expression = {Get-Date -format u}},@{Name="ParentNetBios"; Expression = {$Domain}}
         return $Users
     }
     catch {

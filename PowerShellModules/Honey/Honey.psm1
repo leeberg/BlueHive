@@ -12,13 +12,13 @@ Function Save-AllADUsers
     #>
 
     Param(
-        $Domain = 'berg.com'
+        $DomainObject = ''
     )
    
     try{
-        $UserObjects = Get-AllADUsers -DomainController $DomainController
-        Clear-BHUserAccountData
-        Write-BHUserAccountData -AccountData $UserObjects
+
+        $UserObjects = Get-AllADUsers -Domain ($DomainObject.Forest)
+        Write-BHUserAccountData -AccountData $UserObjects -DomainNetBiosName $DomainObject.NetBIOSName
 
     }
     catch{
@@ -36,6 +36,10 @@ Function Save-AllADUsers
 
 Function Save-AllDomainControllers
 {
+    Param(
+        $DomainObject = ''
+    )
+
     <#
     .SYNOPSIS 
     Take a Collection of Objects and save it to the JSON file
@@ -43,9 +47,8 @@ Function Save-AllDomainControllers
     #>
    
     try{
-        $DomainControllers = Get-BHADDomainControllers
-        Clear-BHADDomainControllers
-        Write-BHADDomainControllers -DomainControllers $DomainControllers
+        $DomainControllers = Get-BHADDomainControllers -Domain ($DomainObject.Forest)
+        Write-BHADDomainControllers -DomainControllers $DomainControllers -DomainNetBiosName ($DomainObject.NetBIOSName)
 
     }
     catch{
@@ -71,17 +74,17 @@ Function Save-AllADHoneyUsers
     #>
 
     Param(
-        $Domain = 'berg.com'
+        $DomainObject = ''
     )
    
     
     
     try{ 
-        $UserObjects = Get-HoneyADusers -DomainController $DomainController
-        Clear-BHUserHoneyAccountData
+        $UserObjects = Get-HoneyADusers -Domain ($DomainObject.NetBIOSName)
+        
         If($UserObjects)
         {
-            Write-BHUserHoneyAccountData -AccountData $UserObjects
+            Write-BHUserHoneyAccountData -AccountData $UserObjects -DomainNetBiosName ($DomainObject.NetBIOSName)
         }
         else {
             Write-AuditLog "Could Not Find ANY Honey Users!"
@@ -111,13 +114,12 @@ Function Save-AllADOUs
     #>
     
     Param(
-        $Domain = 'berg.com'
+        $DomainObject = ''
     )
    
     try {
-        $OUs = Get-AllADOrganizationalUnits -DomainController $DomainController 
-        Clear-AllADOrganizationalUnits
-        Write-BHOUData -OUData $OUs
+        $OUs = Get-AllADOrganizationalUnits -Domain ($DomainObject.Forest)
+        Write-BHOUData -OUData $OUs -DomainNetBiosName ($DomainObject.NetBIOSName)
     }
     catch {
         $Exception = $_.Exception
@@ -147,7 +149,7 @@ Function Save-ADDomain
    
     try {
         $DomainObject = Get-BHDomain -DomainName $Domain
-        Write-BHDomainData -DomainData $DomainObject
+        Write-BHDomainData -DomainObject $DomainObject
     }
     catch {
         $Exception = $_.Exception
@@ -156,6 +158,8 @@ Function Save-ADDomain
         Write-ErrorLog ("Failed to Save AD Domain Info: $($ExceptionMessage) -- $($Exception.InnerException)")
         return $null
     }
+
+    return $DomainObject
     
 }
 
@@ -171,22 +175,24 @@ Function Invoke-BHFullADSync
 
     Param(
         $DomainToSync = 'berg.com'
-        
     )
   
     Write-AuditLog -BSLogContent "Starting AD Sync!"
 
     Write-AuditLog -BSLogContent "Syncing Domain Info from: $($DomainToSync)"
-    Save-ADDomain -Domain $DomainToSync
+    $DomainObject = Save-ADDomain -Domain $DomainToSync
              
     Write-AuditLog -BSLogContent "Syncing Accounts from: $($DomainToSync)"
-    Save-AllADUsers -Domain $DomainToSync
+    Save-AllADUsers -Domain $DomainObject
 
     Write-AuditLog -BSLogContent "Syncing Existing Honey Accounts from: $($DomainToSync)"
-    Save-AllADHoneyUsers -Domain $DomainToSync
+    Save-AllADHoneyUsers -Domain $DomainObject
 
     Write-AuditLog -BSLogContent "Syncing Domain Controllers from: $($DomainToSync)"
-    Save-AllDomainControllers -Domain $DomainToSync
+    Save-AllDomainControllers -Domain $DomainObject
+
+    Write-AuditLog -BSLogContent "Syncing Domain OUs from: $($DomainToSync)"
+    Save-AllADOUs -Domain $DomainObject
 
     Write-AuditLog -BSLogContent "AD Sync Complete!"
 

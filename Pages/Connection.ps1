@@ -61,7 +61,7 @@ New-UDPage -Name "Domain Connection" -Icon server -Content {
                 Write-AuditLog -BSLogContent "Found Domain: $($FoundDomain.DistinguishedName)!"
                 
                 # DO SYNC
-                Invoke-BHFullADSync -Domain $FoundDomain
+                Invoke-BHFullADSync -DomainToSync ($FoundDomain.Forest)
 
                 New-UDGrid -Title "Domain Information" -Headers @("Name", "DistinguishedName", "Forest", "InfrastructureMaster") -Properties @("Name", "DistinguishedName", "Forest","InfrastructureMaster") -Endpoint {    
                 Get-BHDomainData | Out-UDGridData

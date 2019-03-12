@@ -9,24 +9,18 @@
 
 
 #Retrieved Data
-$BHUserAccountsPath = 'C:\Users\lee\git\BlueHive\Data\Retrieved\Accounts.json'
 $BHDomainPath = 'C:\Users\lee\git\BlueHive\Data\Retrieved\Domains'
-$BHOUPath = 'C:\Users\lee\git\BlueHive\Data\Retrieved\OUs.json'
-$BHDomainControllersPath = 'C:\Users\lee\git\BlueHive\Data\Retrieved\DCs.json'
-
-#Managed Data
-$BHUserHoneyAccountsPath = 'C:\Users\lee\git\BlueHive\Data\Managed\HoneyAccounts.json'
 
 #LOG Paths
 $BHLogFilePath = 'C:\Users\lee\git\BlueHive\Data\Logs\AuditLog.log' 
 $BHErrorFilePath = 'C:\Users\lee\git\BlueHive\Data\Logs\ErrorLog.log'
 $BHDeploymentHistoryFilePath = 'C:\Users\lee\git\BlueHive\Data\Logs\Deployment.json'
 
-
 #Data Generation Resources Path
 $BSFirstNamesFile = 'C:\Users\lee\git\BlueHive\Data\Generation\FirstNames.txt'
 $BSLastNamesFile = 'C:\Users\lee\git\BlueHive\Data\Generation\LastNames.txt'
 $BSServiceAccountNamesFile = 'C:\Users\lee\git\BlueHive\Data\Generation\service-accounts.txt'
+
 
 Function Get-BHJSONObject 
 {
@@ -69,108 +63,47 @@ Param(
 
 
 
-Function Get-BHAccountData()
-{
+Function Get-BHAccountData
+{   
+    param(
+        $DomainNetBIOSName = 'berg'
+    )
 
     $Data = @()
-    $ResourcesJsonContent = Get-BHJSONObject -BHFile $BHUserAccountsPath
+    $ResourcesJsonContent = Get-BHJSONObject -BHFile ($BHDomainPath + '\' + $domainname + '\Accounts.json')
 
     return $ResourcesJsonContent
 
-    <#
-    #### Data Stuff for translated 
-    foreach($Resource in $ResourcesJsonContent)
-    {
-        
-        $Data = $Data +[PSCustomObject]@{
-            id=($Resource.id);
-            DistinguishedName=($Resource.name);
-            checkin_time=($Resource.checkin_time);
-            external_ip=($Resource.external_ip);
-            hostname=($Resource.hostname);
-            internal_ip=($Resource.internal_ip);
-            langauge=($Resource.langauge);
-            langauge_version=($Resource.langauge_version);
-            lastseen_time=($Resource.lastseen_time);
-            listener=($Resource.listener);
-            os_details=($Resource.os_details);
-            username=($Resource.username);
-        }
-      
-    }
-    #>
-    
-    
+       
 }
 
 
-Function Get-BHOuData()
+Function Get-BHOuData
 {
+    param(
+        $DomainNetBIOSName = 'berg'
+    )
 
     $Data = @()
-    $ResourcesJsonContent = Get-BHJSONObject -BHFile $BHOUPath
+    $ResourcesJsonContent = Get-BHJSONObject -BHFile ($BHDomainPath + '\' + $domainname + '\OUs.json')
 
     return $ResourcesJsonContent
 
-    <#
-    #### Data Stuff for translated 
-    foreach($Resource in $ResourcesJsonContent)
-    {
-        
-        $Data = $Data +[PSCustomObject]@{
-            id=($Resource.id);
-            DistinguishedName=($Resource.name);
-            checkin_time=($Resource.checkin_time);
-            external_ip=($Resource.external_ip);
-            hostname=($Resource.hostname);
-            internal_ip=($Resource.internal_ip);
-            langauge=($Resource.langauge);
-            langauge_version=($Resource.langauge_version);
-            lastseen_time=($Resource.lastseen_time);
-            listener=($Resource.listener);
-            os_details=($Resource.os_details);
-            username=($Resource.username);
-        }
-      
-    }
-    #>
-    
     
 }
 
 
 
 
-Function Get-BHHoneyAccountData()
+Function Get-BHHoneyAccountData
 {
+    param(
+        $DomainNetBIOSName = 'berg'
+    )
 
-    $Data = @()
-    $ResourcesJsonContent = Get-BHJSONObject -BHFile $BHUserHoneyAccountsPath
+    $ResourcesJsonContent = Get-BHJSONObject -BHFile ($BHDomainPath + '\' + $domainname + '\HoneyAccounts.json')
 
     return $ResourcesJsonContent
-
-    <#
-    #### Data Stuff for translated 
-    foreach($Resource in $ResourcesJsonContent)
-    {
-        
-        $Data = $Data +[PSCustomObject]@{
-            id=($Resource.id);
-            DistinguishedName=($Resource.name);
-            checkin_time=($Resource.checkin_time);
-            external_ip=($Resource.external_ip);
-            hostname=($Resource.hostname);
-            internal_ip=($Resource.internal_ip);
-            langauge=($Resource.langauge);
-            langauge_version=($Resource.langauge_version);
-            lastseen_time=($Resource.lastseen_time);
-            listener=($Resource.listener);
-            os_details=($Resource.os_details);
-            username=($Resource.username);
-        }
-      
-    }
-    #>
     
     
 }
@@ -179,16 +112,40 @@ Function Get-BHHoneyAccountData()
 Function Get-BHDHoneyUserDetailsData
 {
     param(
-        [string]$DistinguishedName
+        [string]$DistinguishedName,
+        [string]$DomainNetBIOSName = 'berg'
     )
 
-    $ResourcesJsonContent = Get-BHJSONObject -BHFile $BHUserHoneyAccountsPath
+   
+    $ResourcesJsonContent = Get-BHJSONObject -BHFile ($BHDomainPath + '\' + $domainname + '\HoneyAccounts.json')
 
     $UserDetails = $ResourcesJsonContent | Where-Object DistinguishedName -eq $DistinguishedName
 
     return $UserDetails
     
 }
+
+
+Function Get-BHDomainData
+{
+    
+    $DomainData = @()
+
+    $DomainFolders = Get-ChildItem -Path $BHDomainPath
+    
+    foreach($Folder in $DomainFolders)
+    {
+        $DomainFolderPath = $Folder.FullName
+        $DomainJsonFile  = Get-BHJSONObject -BHFile ($DomainFolderPath + '\Domain.json')
+        $DomainData = $DomainData + $DomainJsonFile
+
+    }
+    
+    return $DomainData
+
+}
+
+
 
 
 
@@ -200,35 +157,6 @@ Function Get-BHDeploymentHistoryData()
     return $ResourcesJsonContent    
     
 }
-
-
-Function Get-BHHoneyAccounts()
-{
-
-    $Data = @()
-    $ResourcesJsonContent = Get-BHTextFile  $BHUserHoneyAccountsPath
-    
-
-    <#
-    #### Data Stuff
-    foreach($Resource in $ResourcesJsonContent)
-    {
-        $Data = $Data +[PSCustomObject]@{
-            HostName=($Resource.Hostname);
-            IPv4=($Resource.IPv4);
-            Status=($Resource.Status);
-            Computer=(New-UDLink -Text "RDP" -Url "remotedesktop://$Resource.IPv4");
-            Note="";
-            LastScan=($Resource.ScanTime.DateTime);
-            isEmpire=($Resource.EmpireServer);
-        }
-    }
-    #>
-       
-    return $Data
-
-}
-
 
 
 
@@ -276,29 +204,31 @@ Function Write-BHObjectToJSON
 
 
 
-Function Write-BHUser
-{
-    Param (
-        [Parameter(Mandatory=$true)] $BHObjectData
-    )
-
-    Write-BHObjectToJSON -BHFile $BHUserAccountsPath -BHObjectData $BHObjectData
-
-}
-
-
-
-
-
 Function Write-BHUserAccountData
 {
 Param (
-    $AccountData
+    $AccountData,
+    $DomainNetBiosName
 )
-    # TODO - wtf weridness in different version of AD MOdules?
-    # STUDPID $AccountData = $AccountData.Replace('ObjectGUID','ObjectGUIDCAP')
 
-    Write-BHJSON -BHFile $BHUserAccountsPath -BHObjectData $AccountData
+    if($AccountData)
+    {
+
+        $BHDomainUserAccountsPath = ($BHDomainPath + '\' + $DomainNetBiosName + '\Accounts.json')
+
+        if(Test-Path($BHDomainUserAccountsPath))
+        {
+            # Clear Existings
+            Clear-Content $BHDomainUserAccountsPath -Force
+        }
+        else 
+        {
+            # Does not Exist
+        }
+
+        Write-BHJSON -BHFile $BHDomainUserAccountsPath -BHObjectData $AccountData
+
+    }
 
 }
 
@@ -306,24 +236,56 @@ Param (
 Function Write-BHADDomainControllers
 {
     Param (
-        $DomainControllers
+        $DomainControllers,
+        $DomainNetBiosName
     )
-        # TODO - wtf weridness in different version of AD MOdules?
-        # STUDPID $AccountData = $AccountData.Replace('ObjectGUID','ObjectGUIDCAP')
-    
-        Write-BHJSON -BHFile $BHDomainControllersPath -BHObjectData $DomainControllers
+
+        if($DomainControllers)
+        {
+
+            $BHDomainControllersPath = ($BHDomainPath + '\' + $DomainNetBiosName + '\DCs.json')
+
+            if(Test-Path($BHDomainControllersPath))
+            {
+                # Clear Existings
+                Clear-Content $BHDomainControllersPath -Force
+            }
+            else 
+            {
+                # Does not Exist
+            }
+
+            Write-BHJSON -BHFile $BHDomainControllersPath -BHObjectData $DomainControllers
+
+        }
     
 }
 
 
 Function Write-BHUserHoneyAccountData
 {
-Param (
-    $AccountData
-)
+    Param (
+        $AccountData,
+        $DomainNetBiosName
+    )
+
     if($AccountData)
     {
+
+        $BHUserHoneyAccountsPath = ($BHDomainPath + '\' + $DomainNetBiosName + '\HoneyAccounts.json')
+
+        if(Test-Path($BHUserHoneyAccountsPath))
+        {
+             # Clear Existings
+            Clear-Content $BHUserHoneyAccountsPath -Force
+        }
+        else 
+        {
+            # Does not Exist
+        }
+
         Write-BHJSON -BHFile $BHUserHoneyAccountsPath -BHObjectData $AccountData
+
     }
     
 
@@ -331,11 +293,27 @@ Param (
 
 Function Write-BHOUData
 {
-Param (
-    $OUData
-)
+    Param (
+        $OUData,
+        $DomainNetBiosName
+    )
     
-    Write-BHJSON -BHFile $BHOUPath -BHObjectData $OUData
+    If($OUData)
+    {
+        $BHDomainOUPath = ($BHDomainPath + '\' + $DomainNetBiosName + '\OUs.json')
+
+        if(Test-Path($BHDomainOUPath))
+        {
+             # Clear Existings
+            Clear-Content $BHDomainOUPath -Force
+        }
+        else 
+        {
+            # Does not Exist
+        }
+
+        Write-BHJSON -BHFile $BHDomainOUPath -BHObjectData $OUData
+    }
 
 }
 
@@ -346,13 +324,24 @@ Param (
 Function Write-BHDomainData
 {
 Param (
-    $DomainData
+    $DomainObject
 )
 
-    If($DomainData)
+    If($DomainObject)
     {
-        $DomainName = $DomainData.NetBIOSName
-        $DomainNameFilePath = ($BHDomainPath + '\' + $DomainName + '.json')
+        $DomainName = $DomainObject.NetBIOSName
+        $DomainNameFolderPath = ($BHDomainPath + '\' + $DomainName)
+        
+        if(Test-Path($DomainNameFolderPath))
+        {
+            
+        }
+        else
+        {
+            New-Item -Path $DomainNameFolderPath -ItemType Directory
+        }
+
+        $DomainNameFilePath = ($BHDomainPath + '\' + $DomainName + '\Domain.json')
 
         if(Test-Path($DomainNameFilePath))
         {
@@ -364,33 +353,104 @@ Param (
             # Does not Exist
         }
 
-        Write-BHJSON -BHFile $DomainNameFilePath -BHObjectData $DomainData
+        Write-BHJSON -BHFile $DomainNameFilePath -BHObjectData $DomainObject
     }
  
 }
 
-Function Get-BHDomainData
+
+
+
+
+
+Function Clear-BHUserAccountData
 {
-    
-    $DomainData = @()
+    param(
+        $DomainNetBiosName = ''
+    )
 
-    $DomainJsonFiles = Get-ChildItem -Path $BHDomainPath
-    
-    foreach($File in $DomainJsonFiles)
+    $BHDomainUserAccountsPath = ($BHDomainPath + '\' + $DomainNetBiosName + '\Accounts.json')
+
+    if(Test-Path($BHDomainUserAccountsPath))
     {
-       
-        $ResourcesJsonContent = Get-BHJSONObject -BHFile $File.FullName
-        $DomainData = $DomainData + $ResourcesJsonContent
-
+        # Clear Existings
+        Clear-Content $BHDomainUserAccountsPath -Force
     }
+    else 
+    {
+        # Does not Exist
+    }
+}
 
-    
 
-    return $DomainData
+Function Clear-BHADDomainControllers
+{
+    param(
+        $DomainNetBiosName = ''
+    )
+
+    $BHDomainControllersPath = ($BHDomainPath + '\' + $DomainNetBiosName + '\DCs.json')
+
+    if(Test-Path($BHDomainControllersPath))
+    {
+         # Clear Existings
+        Clear-Content $BHDomainControllersPath -Force
+    }
+    else 
+    {
+        # Does not Exist
+    }
+}
+
+
+
+Function Clear-BHUserHoneyAccountData
+{
+    param(
+        $DomainNetBiosName = ''
+    )
+
+    $BHUserHoneyAccountsPath = ($BHDomainPath + '\' + $DomainNetBiosName + '\HoneyAccounts.json')
+
+    if(Test-Path($BHUserHoneyAccountsPath))
+    {
+         # Clear Existings
+        Clear-Content $BHUserHoneyAccountsPath -Force
+    }
+    else 
+    {
+        # Does not Exist
+    }
+}
+
+
+
+
+Function Clear-AllADOrganizationalUnits
+{
+    param(
+        $DomainNetBiosName = ''
+    )
+
+    $BHDomainOUPath = ($BHDomainPath + '\' + $DomainNetBiosName + '\OUs.json')
+
+
+    if(Test-Path($BHDomainOUPath))
+    {
+         # Clear Existings
+        Clear-Content $BHDomainOUPath -Force
+    }
+    else 
+    {
+        # Does not Exist
+    }
 
 }
 
 
+
+
+#### General File stuff
 
 Function Write-DeploymentHistoryLog
 {
@@ -452,67 +512,6 @@ Param (
     $BSLogContentFormatted = ($(Get-Date -Format 'yyyy-MM-dd hh:mm:ss') + ' : ' + $BSLogContent)
     $BSLogContentFormatted | Out-File $BHErrorFilePath -Append
 }
-
-
-Function Clear-BHUserAccountData
-{
-    if(Test-Path($BHUserAccountsPath))
-    {
-         # Clear Existings
-        Clear-Content $BHUserAccountsPath -Force
-    }
-    else 
-    {
-        # Does not Exist
-    }
-}
-
-
-Function Clear-BHADDomainControllers
-{
-    if(Test-Path($BHDomainControllersPath))
-    {
-         # Clear Existings
-        Clear-Content $BHDomainControllersPath -Force
-    }
-    else 
-    {
-        # Does not Exist
-    }
-}
-
-
-
-Function Clear-BHUserHoneyAccountData
-{
-    if(Test-Path($BHUserHoneyAccountsPath))
-    {
-         # Clear Existings
-        Clear-Content $BHUserHoneyAccountsPath -Force
-    }
-    else 
-    {
-        # Does not Exist
-    }
-}
-
-
-
-
-Function Clear-AllADOrganizationalUnits
-{
-    if(Test-Path($BHOUPath))
-    {
-         # Clear Existings
-        Clear-Content $BHOUPath -Force
-    }
-    else 
-    {
-        # Does not Exist
-    }
-
-}
-
 
 
 

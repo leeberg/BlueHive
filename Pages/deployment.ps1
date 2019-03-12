@@ -8,19 +8,23 @@ New-UDPage -Name "Honey Deployment" -Icon empire -Content {
         
         New-UDInputField -Type 'select' -Name 'DeploymentOU' -Values $OUs.DistinguishedName -DefaultValue "Null" -Placeholder "Select an OU to Deploy User Into"
         ### TODO - should be a DOMAIN SELECT!!!
-        New-UDInputField -Type 'select' -Name 'DeploymentDC' -Values $Domains.InfrastructureMaster -DefaultValue "Null" -Placeholder "Select an DC to Deploy User with"
+        New-UDInputField -Type 'select' -Name 'DomainName' -Values $Domains.NetBIOSName -DefaultValue "Null" -Placeholder "Select an DC to Deploy User with"
 
     } -Endpoint {
-        param($DeploymentOU,$DeploymentDC)
+        param($DeploymentOU,$DomainName)
 
-        Write-AuditLog -BSLogContent "Attempting to Create Honey User in OU: $DeploymentOU OU - Using: $DeploymentDC"
+        Write-AuditLog -BSLogContent "Attempting to Create Honey User in OU: $DeploymentOU OU - Using: $DomainName"
 
-        $NewHoneyUser = Invoke-HoneyUserAccount -HoneyUserOu $DeploymentOU
+        $NewHoneyUser = Invoke-HoneyUserAccount -HoneyUserOu $DeploymentOU       
        
         If($NewHoneyUser)
         {
 
-            Write-DeploymentHistoryLog -Description "Deployed: $($NewHoneyUser.SamAccountname) to: $DeploymentDC" -Type "Deployment"
+            Write-DeploymentHistoryLog -Description "Deployed: $($NewHoneyUser.SamAccountname) to: $DomainName" -Type "Deployment"
+
+            # RE SYNC HONEY USERS
+            $DomainObject = Get-BHDomain -DomainName $DomainName
+            Save-AllADHoneyUsers -Domain $DomainObject
 
             Show-UDModal -Content {
                 New-UDHeading -Size 4 -Text "Honey User Deployment"

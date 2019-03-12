@@ -16,6 +16,7 @@ New-UDPage -Name "Managment" -Icon wrench -Content {
                 Modify = New-UDButton -Text "Modify" -OnClick (New-UDEndpoint -Endpoint { 
 
                     $DistinguishedName = $ArgumentList[0]
+                    $ParentNetBios = $ArgumentList[1]
                     
                     $UserDetails = Get-BHDHoneyUserDetailsData -DistinguishedName $DistinguishedName
 
@@ -57,21 +58,26 @@ New-UDPage -Name "Managment" -Icon wrench -Content {
                                         
                                     }
 
-                                     ### TODO Trigger Honey Users RESYNC with DOMAIN PARAM
+                                     # RUN HONEY USER SYNC
+                                     $DomainObject = Get-BHDomain -DomainName $ParentNetBios
+                                     Save-AllADHoneyUsers -Domain $DomainObject
 
                         }
 
                     } 
 
-                } -ArgumentList $_.DistinguishedName)
+                } -ArgumentList $_.DistinguishedName, $_.ParentNetBios)
                 Delete = New-UDButton -Text "Delete User" -OnClick (New-UDEndpoint -Endpoint { 
 
                     $DistinguishedName = $ArgumentList[0]
                     Delete-BHADUser -DistinguishedName $DistinguishedName
-                    ### TODO Trigger Honey Users RESYNC with DOMAIN PARAM
+                    
+                    # RUN HONEY USER SYNC
+                    $DomainObject = Get-BHDomain -DomainName $ParentNetBios
+                    Save-AllADHoneyUsers -Domain $DomainObject
                     
 
-                } -ArgumentList $_.DistinguishedName)
+                } -ArgumentList $_.DistinguishedName, $_.ParentNetBios)
             
             }
         }  | Out-UDGridData
