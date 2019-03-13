@@ -70,7 +70,7 @@ Function Get-BHAccountData
     )
 
     $Data = @()
-    $ResourcesJsonContent = Get-BHJSONObject -BHFile ($BHDomainPath + '\' + $domainname + '\Accounts.json')
+    $ResourcesJsonContent = Get-BHJSONObject -BHFile ($BHDomainPath + '\' + $DomainNetBIOSName + '\Accounts.json')
 
     return $ResourcesJsonContent
 
