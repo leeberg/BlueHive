@@ -5,7 +5,7 @@ New-UDPage -Name "Managment" -Icon wrench -Content {
     $HoneyAccounts = Get-BHHoneyAccountData
 
     
-    New-UDGrid -Title "Managed Honey Account Users" -Headers @("Name", "DeploymentDate" ,"Enabled", "Modify", "Delete") -Properties @("DisplayName", "whenCreated", "Enabled", "Modify","Delete") -Endpoint {    
+    New-UDGrid -Id "ManagedHoneyAccountUsersGrid" -Title "Managed Honey Account Users" -Headers @("Name", "DeploymentDate" ,"Enabled", "Modify", "Delete") -Properties @("DisplayName", "whenCreated", "Enabled", "Modify","Delete") -Endpoint {    
         $HoneyAccounts | ForEach-Object{    
 
             [PSCustomObject]@{
@@ -13,12 +13,14 @@ New-UDPage -Name "Managment" -Icon wrench -Content {
                 whenCreated = $_.whenCreated
                 Enabled = $_.Enabled
                 DistinguishedName = $_.DistinguishedName
+                Domain = $_.ParentNetBios
+
                 Modify = New-UDButton -Text "Modify" -OnClick (New-UDEndpoint -Endpoint { 
 
                     $DistinguishedName = $ArgumentList[0]
                     $ParentNetBios = $ArgumentList[1]
                     
-                    $UserDetails = Get-BHDHoneyUserDetailsData -DistinguishedName $DistinguishedName
+                    $UserDetails = Get-BHDHoneyUserDetailsData -DistinguishedName $DistinguishedName -DomainNetBIOSName $ParentNetBios
 
                     Show-UDModal -Content {
                         New-UDTable -Title "Honey User Details" -Headers @("Name", "DeployedDate", "Enabled") -Endpoint {
@@ -67,14 +69,18 @@ New-UDPage -Name "Managment" -Icon wrench -Content {
                     } 
 
                 } -ArgumentList $_.DistinguishedName, $_.ParentNetBios)
+
                 Delete = New-UDButton -Text "Delete User" -OnClick (New-UDEndpoint -Endpoint { 
 
                     $DistinguishedName = $ArgumentList[0]
+                    $ParentNetBios = $ArgumentList[1]
+
                     Delete-BHADUser -DistinguishedName $DistinguishedName
                     
                     # RUN HONEY USER SYNC
                     $DomainObject = Get-BHDomain -DomainName $ParentNetBios
                     Save-AllADHoneyUsers -Domain $DomainObject
+                    Sync-UDElement -Id 'ManagedHoneyAccountUsersGrid' -Broadcast
                     
 
                 } -ArgumentList $_.DistinguishedName, $_.ParentNetBios)

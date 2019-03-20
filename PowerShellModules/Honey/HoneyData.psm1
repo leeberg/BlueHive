@@ -70,24 +70,67 @@ Function Get-BHAccountData
     )
 
     $Data = @()
-    $ResourcesJsonContent = Get-BHJSONObject -BHFile ($BHDomainPath + '\' + $DomainNetBIOSName + '\Accounts.json')
 
-    return $ResourcesJsonContent
+    if($DomainNetBIOSName -eq '')
+    {
 
-       
+   
+        $DomainFolders = ($BHDomainPath + '\') | Get-ChildItem 
+        Foreach($Folder in $DomainFolders)
+        {
+            $DomainFolderPath = $Folder.FullName
+            $DomainJsonFile  = Get-BHJSONObject -BHFile ($DomainFolderPath + '\Accounts.json')
+            $DomainData = $DomainData + $DomainJsonFile
+        }
+
+        return $DomainData
+        
+    }
+    else 
+    {
+        $ResourcesJsonContent = Get-BHJSONObject -BHFile ($BHDomainPath + '\' + $DomainNetBIOSName + '\Accounts.json')
+
+        return $ResourcesJsonContent
+    }
+
+    
 }
 
 
 Function Get-BHOuData
 {
     param(
-        $DomainNetBIOSName = 'berg'
+        $DomainNetBIOSName = ''
     )
 
     $Data = @()
-    $ResourcesJsonContent = Get-BHJSONObject -BHFile ($BHDomainPath + '\' + $domainname + '\OUs.json')
 
-    return $ResourcesJsonContent
+    if($DomainNetBIOSName -eq '')
+    {
+
+   
+        $DomainFolders = ($BHDomainPath + '\') | Get-ChildItem 
+        Foreach($Folder in $DomainFolders)
+        {
+            $DomainFolderPath = $Folder.FullName
+            $DomainJsonFile  = Get-BHJSONObject -BHFile ($DomainFolderPath + '\OUs.json')
+            $DomainData = $DomainData + $DomainJsonFile
+        }
+
+        return $DomainData
+        
+    }
+    else 
+    {
+        $ResourcesJsonContent = Get-BHJSONObject -BHFile ($BHDomainPath + '\' + $DomainNetBIOSName + '\OUs.json')
+        return $ResourcesJsonContent
+    }
+
+
+
+
+    
+    
 
     
 }
@@ -98,26 +141,49 @@ Function Get-BHOuData
 Function Get-BHHoneyAccountData
 {
     param(
-        $DomainNetBIOSName = 'berg'
+        $DomainNetBIOSName = ''
     )
 
-    $ResourcesJsonContent = Get-BHJSONObject -BHFile ($BHDomainPath + '\' + $domainname + '\HoneyAccounts.json')
+    $DomainData = @()
 
-    return $ResourcesJsonContent
+    if($DomainNetBIOSName -eq '')
+    {
+
+   
+        $DomainFolders = ($BHDomainPath + '\') | Get-ChildItem 
+        Foreach($Folder in $DomainFolders)
+        {
+            $DomainFolderPath = $Folder.FullName
+            $DomainJsonFile  = Get-BHJSONObject -BHFile ($DomainFolderPath + '\HoneyAccounts.json')
+            $DomainData = $DomainData + $DomainJsonFile
+        }
+
+        return $DomainData
+        
+    }
+    else 
+    {
+        $ResourcesJsonContent = Get-BHJSONObject -BHFile ($BHDomainPath + '\' + $DomainNetBIOSName + '\HoneyAccounts.json')
+        return $ResourcesJsonContent
+    }
+    
+
+    
     
     
 }
+
 
 
 Function Get-BHDHoneyUserDetailsData
 {
     param(
         [string]$DistinguishedName,
-        [string]$DomainNetBIOSName = 'berg'
+        [string]$DomainNetBIOSName = 'BERG'
     )
 
    
-    $ResourcesJsonContent = Get-BHJSONObject -BHFile ($BHDomainPath + '\' + $domainname + '\HoneyAccounts.json')
+    $ResourcesJsonContent = Get-BHJSONObject -BHFile ($BHDomainPath + '\' + $DomainNetBIOSName + '\HoneyAccounts.json')
 
     $UserDetails = $ResourcesJsonContent | Where-Object DistinguishedName -eq $DistinguishedName
 

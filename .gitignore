@@ -28,3 +28,4 @@ Data/Retrieved/Domain.json
 Data/Retrieved/OUs.json
 Data/Retrieved/Domains/BERG.json
 Data/Logs/AuditLog.log
+Data/Logs/Deployment.json
