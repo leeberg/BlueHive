@@ -4,29 +4,17 @@ New-UDPage -Name "Home" -Icon home -Content {
 
     $HoneyUsers = Get-BHHoneyAccountData
     $UserAccounts = Get-BHAccountData
-    $History = Get-BHDeploymentHistoryData
+    $DeploymentHistory = Get-BHDeploymentHistoryData
 
-    New-UDRow -Columns {
-        
 
-        New-UDColumn -Size 2 {    
-
-            New-UDCounter -Title "Deployed Honey Accounts" -Endpoint {
-                ($HoneyUsers | Measure).Count | ConvertTo-Json
-            } -FontColor "black"
-
-        }
-
-        New-UDColumn -Size 2 {    
-
-                New-UDCounter -Title "Deployment Actions" -Endpoint {
-                    ($History | Measure).Count | ConvertTo-Json
-                } -FontColor "black"
     
-            }
-
+    <##>
+    New-UDLayout -Columns 4 -Content {  
+      
+        New-UDCard -Id "card_Honey" -Title 'Deployed Honey Accounts' -Text ($HoneyUsers | Measure).Count  -BackgroundColor '#379af0' 
+        New-UDCard -Id "care_Deployments" -Title "Deployment Actions" -Text ($DeploymentHistory | Measure).Count  -BackgroundColor '#26c6da'
+    
     }
-
 
 
     New-UDGrid -Title "Managed Honey Account Users" -Headers @("Name","Enabled","DeploymentDate") -Properties @("DisplayName", "Enabled", "whenCreated") -Endpoint {    

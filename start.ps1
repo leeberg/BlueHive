@@ -2,7 +2,7 @@
 #First Time Setup DEbug
 
 
-$Credential = Get-Credential
+#$Credential = Get-Credential
 
 #$session = New-PSSession -ComputerName "192.168.200.130" -Credential $Credential
 #Invoke-Command $session -Scriptblock { Import-Module ActiveDirectory }

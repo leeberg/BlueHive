@@ -3,14 +3,13 @@ New-UDPage -Name "Domain Connection" -Icon server -Content {
     
     Write-AuditLog -BSLogContent "Loaded Domain Connection Page"
 
-    # FIRST CHECK AND SEE IF I HAVE AN EXISTING DOMAIN CONNECTION
-
+    New-UDGrid -Id "UDGRID_ExistingDomainConfig" -Title "Existing Domain Connection" -Headers @("Name", "DistinguishedName", "Forest", "Domain Controller", "Last Sync", " ") -Properties @("Name", "DistinguishedName", "Forest","InfrastructureMaster", "LastSync", "Sync") -Endpoint {
+        
     Write-AuditLog -BSLogContent "Domain Connection Page checking for existing domain data"
-    $ExistingDomainConfiguration = Get-BHDomainData
-    if($ExistingDomainConfiguration)
-    {
-        Write-AuditLog -BSLogContent "Domain Connection Page found Existing Domain Data!"
-        New-UDGrid -Title "Existing Domain Connection" -Headers @("Name", "DistinguishedName", "Forest", "Domain Controller", "Last Sync", " ") -Properties @("Name", "DistinguishedName", "Forest","InfrastructureMaster", "LastSync", "Sync") -Endpoint {
+   
+            $ExistingDomainConfiguration = Get-BHDomainData
+            if(!$ExistingDomainConfiguration){ Write-AuditLog -BSLogContent "Domain Connection Page DID NOT FIND Existing Domain Data!"}
+   
             $ExistingDomainConfiguration | ForEach-Object{    
 
                 [PSCustomObject]@{
@@ -27,16 +26,7 @@ New-UDPage -Name "Domain Connection" -Icon server -Content {
             } | Out-UDGridData
         } 
                         
-    }
-    else
-    {
 
-        Write-AuditLog -BSLogContent "Domain Connection Page DID NOT FIND Existing Domain Data!"
-
-    }
-
-
-    
 
     # TODO - should do something about being able to sync with a domain even
     # Though my workstation is not domain joined. 
@@ -63,9 +53,7 @@ New-UDPage -Name "Domain Connection" -Icon server -Content {
                 # DO SYNC
                 Invoke-BHFullADSync -DomainToSync ($FoundDomain.Forest)
 
-                New-UDGrid -Title "Domain Information" -Headers @("Name", "DistinguishedName", "Forest", "InfrastructureMaster") -Properties @("Name", "DistinguishedName", "Forest","InfrastructureMaster") -Endpoint {    
-                Get-BHDomainData | Out-UDGridData
-            }
+                Sync-UDElement -Id "UDGRID_ExistingDomainConfig" -Broadcast
 
             }
             else {

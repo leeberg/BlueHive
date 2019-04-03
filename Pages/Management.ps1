@@ -2,10 +2,9 @@
 
 New-UDPage -Name "Managment" -Icon wrench -Content {
    
-    $HoneyAccounts = Get-BHHoneyAccountData
-
-    
+        
     New-UDGrid -Id "ManagedHoneyAccountUsersGrid" -Title "Managed Honey Account Users" -Headers @("Name", "DeploymentDate" ,"Enabled", "Modify", "Delete") -Properties @("DisplayName", "whenCreated", "Enabled", "Modify","Delete") -Endpoint {    
+        $HoneyAccounts = Get-BHHoneyAccountData
         $HoneyAccounts | ForEach-Object{    
 
             [PSCustomObject]@{
@@ -15,8 +14,9 @@ New-UDPage -Name "Managment" -Icon wrench -Content {
                 DistinguishedName = $_.DistinguishedName
                 Domain = $_.ParentNetBios
 
-                Modify = New-UDButton -Text "Modify" -OnClick (New-UDEndpoint -Endpoint { 
-
+                Modify = New-UDButton -Text "Modify" -OnClick (
+                    
+                New-UDEndpoint -Endpoint { 
                     $DistinguishedName = $ArgumentList[0]
                     $ParentNetBios = $ArgumentList[1]
                     
@@ -44,8 +44,6 @@ New-UDPage -Name "Managment" -Icon wrench -Content {
                                         catch{
                                             New-UDInputAction -Toast "Failed to Reset Password!"
                                         }
-
-                                         ### TODO Trigger Honey Users RESYNC with DOMAIN PARAM
                                         
                                     }
 
@@ -63,6 +61,7 @@ New-UDPage -Name "Managment" -Icon wrench -Content {
                                      # RUN HONEY USER SYNC
                                      $DomainObject = Get-BHDomain -DomainName $ParentNetBios
                                      Save-AllADHoneyUsers -Domain $DomainObject
+                                     Sync-UDElement -Id "ManagedHoneyAccountUsersGrid" Broadcast
 
                         }
 
