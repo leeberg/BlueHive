@@ -8,18 +8,19 @@
 # Then we must update all references to be domain aware
 
 
+
 #Retrieved Data
-$BHDomainPath = 'C:\Users\lee\git\BlueHive\Data\Retrieved\Domains'
+$BHDomainPath =  $Cache:BlueHiveInfo.BlueHiveFolder +'\Data\Retrieved\Domains'
 
 #LOG Paths
-$BHLogFilePath = 'C:\Users\lee\git\BlueHive\Data\Logs\AuditLog.log' 
-$BHErrorFilePath = 'C:\Users\lee\git\BlueHive\Data\Logs\ErrorLog.log'
-$BHDeploymentHistoryFilePath = 'C:\Users\lee\git\BlueHive\Data\Logs\Deployment.json'
+$BHLogFilePath = $Cache:BlueHiveInfo.BlueHiveFolder +'\Data\Logs\AuditLog.log' 
+$BHErrorFilePath = $Cache:BlueHiveInfo.BlueHiveFolder +'\Data\Logs\ErrorLog.log'
+$BHDeploymentHistoryFilePath = $Cache:BlueHiveInfo.BlueHiveFolder +'\Data\Logs\Deployment.json'
 
 #Data Generation Resources Path
-$BSFirstNamesFile = 'C:\Users\lee\git\BlueHive\Data\Generation\FirstNames.txt'
-$BSLastNamesFile = 'C:\Users\lee\git\BlueHive\Data\Generation\LastNames.txt'
-$BSServiceAccountNamesFile = 'C:\Users\lee\git\BlueHive\Data\Generation\service-accounts.txt'
+$BSFirstNamesFile = $Cache:BlueHiveInfo.BlueHiveFolder +'\Data\Generation\FirstNames.txt'
+$BSLastNamesFile = $Cache:BlueHiveInfo.BlueHiveFolder +'\Data\Generation\LastNames.txt'
+$BSServiceAccountNamesFile = $Cache:BlueHiveInfo.BlueHiveFolder +'\Data\Generation\service-accounts.txt'
 
 
 Function Get-BHJSONObject 

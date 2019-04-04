@@ -83,7 +83,6 @@ Function Get-AllADOrganizationalUnits
     try{
         $OUs = Get-ADOrganizationalUnit -Filter * -Properties DistinguishedName @Cache:ConnectionInfo | Select-Object -Property DistinguishedName,ManagedBy,Name,ObjectClass,ObjectGUID
 
-    
         return $OUs
     }
     catch
@@ -146,7 +145,8 @@ Function Get-HoneyADusers
 Function Set-UserPassword
 {
     param(
-        [string]$DistinguishedName,
+        [Parameter(Mandatory=$true)]
+        [String]$DistinguishedName,
         [string]$Password
     )
 
@@ -173,7 +173,8 @@ Function Set-UserPassword
 Function Delete-BHADUser
 {
     param(
-        [string]$DistinguishedName
+        [Parameter(Mandatory=$true)]
+        [String]$DistinguishedName
     )
 
     Write-AuditLog ("Attempting to Delete: $DistinguishedName")
@@ -246,8 +247,11 @@ Function Set-UserState
 
 Function Set-ExtensionAttribute
 {
+
     Param(
-        $ObjectDN = 'CN=Alexandria Jomes,OU=ActivtySimulatorUsers,OU=Demo Users,DC=berg,DC=com'
+        [Parameter(Mandatory=$true)]
+        [String]$ObjectDN
+        #'CN=Alexandria Jomes,OU=ActivtySimulatorUsers,OU=Demo Users,DC=berg,DC=com'
     )
 
     # TODO GOTTA MAKE THIS MORE FLEXIBLE

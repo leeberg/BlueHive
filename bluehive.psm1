@@ -1,6 +1,7 @@
 ﻿function Start-BHDash {
 
     param(
+        [string]$BlueHiveFolder,
         [string]$Server,
         [PSCredential]$Credential,
         [int]$Port = 10000
@@ -14,6 +15,11 @@
     $Cache:ConnectionInfo = @{
         Server = $Server
         Credential = $Credential
+    }
+    
+    $Cache:BlueHiveInfo = @{
+        BlueHiveFolder = $BlueHiveFolder
+
     }
 
     $DarkDefault = New-UDTheme -Name "Basic" -Definition @{
@@ -65,8 +71,8 @@
     Import-Module ActiveDirectory
 
     Try{
-        #TODO Double Call - probably better way.
-        Get-PSDrive -Name AD | Remove-PSDrive
+        $ADDrive = Get-PSDrive -Name AD -ErrorAction SilentlyContinue 
+        if($ADDrive){Remove-PSDrive}
     }
     Catch {
         # Probably not there yet.
