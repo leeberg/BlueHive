@@ -1,13 +1,13 @@
 <# TODO 
 
-Figure out how creds / sessions actually work in UD / migrate to IIS BAY BEE
-2019-03-06 10:08:22 : Access is denied -- System.ServiceModel.FaultException: The operation failed due to insufficient access rights.
-
+NEED TO migration these modules to essential take the @Cache:ConnectionInfo object in - then I can pass that to the domain I am trying to connect to.
 #>
+
 
 function Get-BHDomain {
     param (
-        $DomainName = 'berg.com'
+        [Parameter(Mandatory=$true)]
+        [String]$DomainName
     )
 
     Write-AuditLog ("Running Function: Get-BHDomain")
@@ -17,10 +17,7 @@ function Get-BHDomain {
 
     if($RetrievedDomain)
     {
-
         return $RetrievedDomain
-        
-
     }
     else
     {
@@ -30,7 +27,7 @@ function Get-BHDomain {
 
 function Get-BHAllDomains {
 
-    
+    # TODO Implement Domain Searching / Params
     Write-AuditLog ("Running Function: Get-BHAllDomains")
 
     $RetrievedDomain = Get-ADDomain @Cache:ConnectionInfo | Select-Object -Property DistinguishedName,DNSRoot,DomainControllersContainer,DomainMode,DomainSID,Forest,InfrastructureMaster,Name,NetBIOSName,ObjectGUID, PDCEmulator,ReplicaDirectoryServers,RIDMaster,SystemsContainer,UsersContainer
@@ -52,11 +49,11 @@ Function Get-AllADUsers
 {
     param(
         $HoneyExtensionField = 'OtherName',
-        $Domain = 'berg.com'
+        $Domain = ''
     )
         
     Write-AuditLog ("Running Function: Get-AllADUsers")
-
+    # TODO Implement Domain Searching
     try {
     
         #TODO - Different Version of AD Module have way different returns (check SID and other properties?)
@@ -77,7 +74,7 @@ Function Get-AllADOrganizationalUnits
     param(
         $Domain = ''
     )
-
+    # TODO Implement Domain Searching
     Write-AuditLog ("Running Function: Get-AllADOrganizationalUnits")
 
     try{
@@ -147,7 +144,10 @@ Function Set-UserPassword
     param(
         [Parameter(Mandatory=$true)]
         [String]$DistinguishedName,
-        [string]$Password
+        
+        [Parameter(Mandatory=$true)]
+        [String]$Password
+   
     )
 
     Write-AuditLog ("Resetting Password for $DistinguishedName")
@@ -170,7 +170,7 @@ Function Set-UserPassword
 }
 
 
-Function Delete-BHADUser
+Function Remove-BHADUser
 {
     param(
         [Parameter(Mandatory=$true)]
@@ -198,8 +198,13 @@ Function Delete-BHADUser
 Function Set-UserState
 {
     param(
-        [string]$DistinguishedName,
-        [string]$State
+
+        [Parameter(Mandatory=$true)]
+        [String]$DistinguishedName,
+        
+        [Parameter(Mandatory=$true)]
+        [String]$State
+        
     )
 
     Write-AuditLog ("Changing State for $DistinguishedName to $State")
@@ -221,7 +226,7 @@ Function Set-UserState
         }
     
     }
-    if($State -eq "Enabled")
+    elseif($State -eq "Enabled")
     {
         try 
         {
@@ -238,6 +243,9 @@ Function Set-UserState
         }
     
     }
+    else {
+        Write-AuditLog ("Bad State Given!")
+    }
 
 }
 
@@ -251,7 +259,6 @@ Function Set-ExtensionAttribute
     Param(
         [Parameter(Mandatory=$true)]
         [String]$ObjectDN
-        #'CN=Alexandria Jomes,OU=ActivtySimulatorUsers,OU=Demo Users,DC=berg,DC=com'
     )
 
     # TODO GOTTA MAKE THIS MORE FLEXIBLE
@@ -267,21 +274,40 @@ Function Set-ExtensionAttribute
 }
 
 
-# todo - BAD NAME - 
 Function Invoke-HoneyUserAccount
 {   
     
     param(
         $HoneyExtensionField = 'OtherName',
         $HoneyExtensionCode = '1337',
-        $HoneyUserOu = 'OU=ActivtySimulatorUsers,OU=Demo Users,DC=berg,DC=com'
+        [Parameter(Mandatory=$true)]
+        [String]$HoneyUserOu,
+        $IsServiceAccount = 'False'
     )
 
-    ### TODO PAram all the thigns but randomize it if none provided
+    #TODO - Implement the Honey Extension Field to be an EXT attribute or something better
+    #TODO PAram all the thigns but randomize it if none provided
 
     Write-AuditLog ("Running Function: Invoke-HoneyUserAccount")
 
-    $RandomUserDetails = Get-RandomPerson
+    if($IsServiceAccount -eq 'True')
+    {
+        # IF Service account - generate a different format and SPN
+        $RandomUserDetails = Get-RandomServiceAccount
+        $RandomDC = (Get-BHADDomainControllers | Get-Random | Select-Object -Property HostName).HostName
+        $RandomServiceClass = @('MSSQLSvc','DNS','ldap','NTFrs',(New-Guid).Guid),'WEB','iisadmin','dhcp','netlogon' | Get-Random
+        $RandomServicePort = @('80','8080','8081','1433','1434','443','4022','135','5432','5433',(Get-Random -Minimum 125 -Maximum 5000)) | Get-Random
+        
+        $RandomSPN  = ($RandomServiceClass + '/' + $RandomDC + ':' + $RandomServicePort)
+        $RanomdSPNHash =@{Add=$RandomSPN}    
+        
+    }
+    else 
+    {
+        $RandomUserDetails = Get-RandomPerson
+    }
+
+
     Write-AuditLog ("Creating Random User: $($RandomUserDetails.samaccountname)")
     
     
@@ -289,8 +315,19 @@ Function Invoke-HoneyUserAccount
         
         # TODO - Consider Optional WEAK Password List for the Honey User
         $RandomPassword = ConvertTo-SecureString -String (([char[]]([char]33..[char]95) + ([char[]]([char]97..[char]126)) + 0..9 | sort {Get-Random})[0..8] -join '') -AsPlainText -Force
-        $HoneyUser = New-ADUser -Name $RandomUserDetails.samaccountname -GivenName $RandomUserDetails.firstname -Surname $RandomUserDetails.lastname -EmailAddress $RandomUserDetails.email -DisplayName $RandomUserDetails.displayname -Enabled $true -AccountPassword $RandomPassword -Path $HoneyUserOu -PassThru @Cache:ConnectionInfo
-        Set-ADUser -Identity $HoneyUser.DistinguishedName -OtherName $HoneyExtensionCode @Cache:ConnectionInfo
+        
+        if($IsServiceAccount -eq 'True')
+        {
+            $HoneyUser = New-ADUser -Name $RandomUserDetails.samaccountname -EmailAddress $RandomUserDetails.email -DisplayName $RandomUserDetails.displayname -Enabled $true -AccountPassword $RandomPassword -Path $HoneyUserOu -PassThru @Cache:ConnectionInfo
+            Set-ADUser -Identity $HoneyUser.DistinguishedName -OtherName $HoneyExtensionCode -ServicePrincipalNames $RanomdSPNHash @Cache:ConnectionInfo
+            
+        }
+        else 
+        {
+            $HoneyUser = New-ADUser -Name $RandomUserDetails.samaccountname -GivenName $RandomUserDetails.firstname -Surname $RandomUserDetails.lastname -EmailAddress $RandomUserDetails.email -DisplayName $RandomUserDetails.displayname -Enabled $true -AccountPassword $RandomPassword -Path $HoneyUserOu -PassThru @Cache:ConnectionInfo
+            Set-ADUser -Identity $HoneyUser.DistinguishedName -OtherName $HoneyExtensionCode @Cache:ConnectionInfo
+        }
+
         $HoneyUserDetails = Get-ADUser -Identity $HoneyUser.DistinguishedName -Properties * @Cache:ConnectionInfo
 
         Write-AuditLog ("Created Random User: $($RandomUserDetails.samaccountname) OK!")

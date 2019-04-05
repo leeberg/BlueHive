@@ -74,7 +74,7 @@ New-UDPage -Name "Managment" -Icon wrench -Content {
                     $DistinguishedName = $ArgumentList[0]
                     $ParentNetBios = $ArgumentList[1]
 
-                    Delete-BHADUser -DistinguishedName $DistinguishedName
+                    Remove-BHADUser -DistinguishedName $DistinguishedName
                     
                     # RUN HONEY USER SYNC
                     $DomainObject = Get-BHDomain -DomainName $ParentNetBios

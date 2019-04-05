@@ -1,12 +1,3 @@
-Tools/DomainPasswordSpray.ps1
-Tools/DomainPasswordSpray/DomainPasswordSpay.psd1
-Tools/DomainPasswordSpray/DomainPasswordSpray.psm1
-scan.json
-scratch.ps1
-Data/EmpireAgents.json
-Data/EmpireConfig.json
-Data/EmpireModules.json
-Data/NetworkScan.json
 Data/Managed/HoneyAccounts.json
 Data/AuditLog.log
 Data/ErrorLog.log
@@ -29,3 +20,14 @@ Data/Retrieved/OUs.json
 Data/Retrieved/Domains/BERG.json
 Data/Logs/AuditLog.log
 Data/Logs/Deployment.json
+Data/Retrieved/Domains/BERG/OUs.json
+Data/Retrieved/Domains/BERG/HoneyAccounts.json
+Data/Retrieved/Domains/BERG/Domain.json
+Data/Retrieved/Domains/BERG/DCs.json
+Data/Retrieved/Domains/BERG/Accounts.json
+Data/Retrieved/OUs.json
+Data/Retrieved/Domain.json
+Data/Retrieved/Accounts.json
+Data/Managed/HoneyAccounts.json
+Data/Logs/AuditLog.log
+Data/Logs/AuditLog.log

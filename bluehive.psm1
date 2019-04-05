@@ -7,7 +7,7 @@
         [int]$Port = 10000
     )
 
-    Write-AuditLog -BSLogContent "Starting BlueHive!"
+   
 
     #$Cache:Loading = $true
     #$Cache:ChartColorPalette = @('#5899DA', '#E8743B', '#19A979', '#ED4A7B', '#945ECF', '#13A4B4', '#525DF4', '#BF399E', '#6C8893', '#EE6868', '#2F6497')
@@ -17,11 +17,9 @@
         Credential = $Credential
     }
     
-    $Cache:BlueHiveInfo = @{
-        BlueHiveFolder = $BlueHiveFolder
-
-    }
-
+    $Cache:BlueHiveInfo = $BlueHiveFolder
+    
+    
     $DarkDefault = New-UDTheme -Name "Basic" -Definition @{
         UDDashboard = @{
             BackgroundColor = "#393F47"
@@ -72,7 +70,7 @@
 
     Try{
         $ADDrive = Get-PSDrive -Name AD -ErrorAction SilentlyContinue 
-        if($ADDrive){Remove-PSDrive}
+        if($ADDrive){Remove-PSDrive -Name AD}
     }
     Catch {
         # Probably not there yet.
@@ -90,10 +88,11 @@
         $Pages += . $_.FullName
     }
     
-    $BSEndpoints = New-UDEndpointInitialization -Module @("PowerShellModules\Honey\Honey.psm1", "PowerShellModules\Honey\HoneyAD.psm1", "PowerShellModules\Honey\HoneyData.psm1")
+    $BSEndpoints = New-UDEndpointInitialization -Module @("Modules\Honey\Honey.psm1", "Modules\Honey\HoneyAD.psm1", "Modules\Honey\HoneyData.psm1")
     $Dashboard = New-UDDashboard -Title "BlueHive 🐝 🍯 🐝" -Pages $Pages -EndpointInitialization $BSEndpoints -Theme $DarkDefault
 
     Try{
+        Write-AuditLog -BSLogContent "Starting BlueHive!"
         Start-UDDashboard -Dashboard $Dashboard -Port 10000 
         Write-AuditLog -BSLogContent "BlueHive Started!"
     }
