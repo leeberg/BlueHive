@@ -103,12 +103,12 @@ Function Get-BHOuData
         $DomainNetBIOSName = ''
     )
 
-    $Data = @()
+    $DomainData = @()
 
     if($DomainNetBIOSName -eq '')
     {
 
-   
+
         $DomainFolders = ($Cache:BHDomainPath + '\') | Get-ChildItem | ?{ $_.PSIsContainer }
         Foreach($Folder in $DomainFolders)
         {
@@ -125,12 +125,6 @@ Function Get-BHOuData
         $ResourcesJsonContent = Get-BHJSONObject -BHFile ($Cache:BHDomainPath + '\' + $DomainNetBIOSName + '\OUs.json')
         return $ResourcesJsonContent
     }
-
-
-
-
-    
-    
 
     
 }

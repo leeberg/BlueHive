@@ -24,7 +24,7 @@
     Author = 'Lee Berg'
     
     # Company or vendor of this module
-    CompanyName = 'Berg Consulting'
+    CompanyName = 'Berg Studios'
     
     # Copyright statement for this module
     Copyright = '(c) 2019 Lee Berg. All rights reserved.'
