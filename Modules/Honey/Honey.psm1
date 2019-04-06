@@ -12,7 +12,7 @@ Function Save-AllADUsers
     #>
 
     Param(
-        $DomainObject = ''
+        [Parameter(Mandatory=$true)] $DomainObject
     )
    
     try{
@@ -37,7 +37,7 @@ Function Save-AllADUsers
 Function Save-AllDomainControllers
 {
     Param(
-        $DomainObject = ''
+        [Parameter(Mandatory=$true)] $DomainObject
     )
 
     <#
@@ -74,7 +74,7 @@ Function Save-AllADHoneyUsers
     #>
 
     Param(
-        $DomainObject = ''
+        [Parameter(Mandatory=$true)] $DomainObject
     )
    
     
@@ -114,7 +114,7 @@ Function Save-AllADOUs
     #>
     
     Param(
-        $DomainObject = ''
+        [Parameter(Mandatory=$true)] $DomainObject
     )
    
     try {
@@ -142,9 +142,9 @@ Function Save-ADDomain
     Take a Collection of Objects and save it to the JSON file
      
     #>
-    
+    #TODO - Convert to Object Call
     Param(
-        $Domain = 'berg.com'
+        [Parameter(Mandatory=$true)] $Domain
     )
    
     try {
@@ -174,7 +174,7 @@ Function Invoke-BHFullADSync
     #>
 
     Param(
-        $DomainToSync = 'berg.com'
+        [Parameter(Mandatory=$true)] $DomainToSync
     )
   
     Write-AuditLog -BSLogContent "Starting AD Sync!"
@@ -202,16 +202,3 @@ Function Invoke-BHFullADSync
 
 
 }
-
-
-
-
-
-
-
-
-##### Testing Zone
-
-#Invoke-HoneyUserAccount
-#Get-RandomServiceAccount
-#Get-RandomPerson

@@ -106,22 +106,3 @@
 
 
 }
-
-function Start-BHAPI{
-
-    ### Haven't messed around with this at all
-    ### Next Step to replace module calls with API Calls?
-
-    $Endpoints = @()
-
-    $Endpoints += New-UDEndpoint -url 'GetEmpireModules' -Endpoint {
-        Get-BSEmpireModuleData | ConvertTo-Json
-        
-    }
-
-    Start-UDRestApi -Endpoint $Endpoints -Port 10001 -AutoReload
-
-
-
-
-}

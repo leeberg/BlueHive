@@ -300,7 +300,13 @@ Function Invoke-HoneyUserAccount
         
         $RandomSPN  = ($RandomServiceClass + '/' + $RandomDC + ':' + $RandomServicePort)
         $RanomdSPNHash =@{Add=$RandomSPN}    
-        
+
+        #Extra Properties to Prevent HoneyBuster Detection
+        # TODO Figue out a clever way to do this - actually log in with the user?
+        #logoncount
+        #lastlogontimestamp
+        #lastlogon
+           
     }
     else 
     {
@@ -319,7 +325,7 @@ Function Invoke-HoneyUserAccount
         if($IsServiceAccount -eq 'True')
         {
             $HoneyUser = New-ADUser -Name $RandomUserDetails.samaccountname -EmailAddress $RandomUserDetails.email -DisplayName $RandomUserDetails.displayname -Enabled $true -AccountPassword $RandomPassword -Path $HoneyUserOu -PassThru @Cache:ConnectionInfo
-            Set-ADUser -Identity $HoneyUser.DistinguishedName -OtherName $HoneyExtensionCode -ServicePrincipalNames $RanomdSPNHash @Cache:ConnectionInfo
+            Set-ADUser -Identity $HoneyUser.DistinguishedName -OtherName $HoneyExtensionCode -ServicePrincipalNames $RanomdSPNHash @Cache:ConnectionInfo 
             
         }
         else 

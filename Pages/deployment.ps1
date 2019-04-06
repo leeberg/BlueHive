@@ -42,8 +42,9 @@
         
         if($CreatedUserOK -eq $true)
         {
-            # TODO - RE SYNC HONEY USERS ONLY
-            # TODO This Queries AD fore the created users
+            
+            
+            # TODO - Used to resync all honey users here... probably not needed - can do this better
             $DomainObject = Get-BHDomain -DomainName $DomainName
             Save-AllADHoneyUsers -Domain $DomainObject
 
