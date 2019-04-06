@@ -7,6 +7,10 @@
 
 **WARNING**: This project is intended to be used as a teaching tool for learning [Universal Dashboard](https://universaldashboard.io/) and the basic concepts of Active Directory Honey Pot Users - don't use this in your production :) 🖥 🔥 
 
+
+**NOTE** : Uses Names files from [Seclists](https://github.com/danielmiessler/SecLists/tree/master/Passwords) as data for the random user / account creation process.
+
+
 ## Screenshots
 
 **Home Page**
