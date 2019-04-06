@@ -41,7 +41,7 @@
 * Some... LESS THAN efficient powershell scripting ;)
 
 ## Usage
-1. Populate your own environmental variables in the "start.ps1" and where you would like bluehive to store it's data by populating the ```$BlueHiveFolder``` variable in `HoneyData.psm1`
+1. **SETUP** - Populate your own environmental variables in the "start.ps1" and where you would like bluehive to store it's data by populating the ```$BlueHiveFolder``` variable in `HoneyData.psm1` script file - *Sorry - haven't variablized this yet*... :(
 2. Use the start script to connect to active directory
 3. Open the "Domain Connection" page and initiate a new domain sync by specifying your domain name and clicking the "Sync" button.
 4. Verify Domain Information in the "Existing Domain Connection" Pane. **Note - at this point you should have domain data populated in your `Data\Retrieved\Domains` folder
