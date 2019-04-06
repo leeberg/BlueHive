@@ -1,8 +1,9 @@
 # BlueHive
 
+**Active Directory Honey User Account Management**
 ![BlueHive Logo](./img/bluehive.png)
 
-BlueHive is HoneyPot User management tool built with the free open source community edition of [Universal Dashboard](https://universaldashboard.io/) by [Ironman Software](https://ironmansoftware.com). This utility can be used to create and manage Honeypot user and service accounts via an interactive web dashboard.
+**BlueHive** is **HoneyPot User management tool** built with the free open source community edition of [Universal Dashboard](https://universaldashboard.io/) by [Ironman Software](https://ironmansoftware.com). This utility can be used to create and manage Honeypot user and service accounts via an interactive web dashboard.
 
 **WARNING**: This project is intended to be used as a teaching tool for learning [Universal Dashboard](https://universaldashboard.io/) and the basic concepts of Active Directory Honey Pot Users - don't use this in your production :) 🖥 🔥 
 
