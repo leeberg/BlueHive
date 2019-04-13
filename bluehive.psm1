@@ -79,6 +79,42 @@
     Get-ChildItem (Join-Path $PSScriptRoot "pages") -Exclude "home.ps1" | ForEach-Object {
         $Pages += . $_.FullName
     }
+
+
+
+    # Scheduled Endpoints for User Logins
+    $10MinSchedule = New-UDEndpointSchedule -Every 10 -Minute 
+    
+    $Endpoint = New-UDEndpoint -Schedule $10MinSchedule -Endpoint {
+        
+        $HoneyAccounts = Get-BHHoneyAccountData
+        ForEach($HoneyUser in $HoneyAccounts)
+        {
+            if($HoneyUser.AutoLogin -eq 'Enabled')
+            {
+                
+                $RandomPassword = ConvertTo-SecureString -String (([char[]]([char]33..[char]95) + ([char[]]([char]97..[char]126)) + 0..9 | sort {Get-Random})[0..8] -join '') -AsPlainText -Force
+                Set-ADAccountPassword -Identity $HoneyUser.DistinguishedName -Reset -NewPassword $RandomPassword @Cache:ConnectionInfo 
+                $HoneyCred = New-Object System.Management.Automation.PSCredential(($HoneyUser.ParentNetBios+'\'+$HoneyUser.name),$RandomPassword)
+
+                $HoneySession = New-PSSession -Credential $HoneyCred -ComputerName 'BC-DC.berg.com'
+                Invoke-Command $HoneySession -Scriptblock { get-aduser -filter * }
+                Remove-PSSession -Session $HoneySession
+
+                          
+            }
+            
+
+        }
+    }
+
+
+    <#
+
+    #>
+
+
+
     
     $BSEndpoints = New-UDEndpointInitialization -Module @("Modules\Honey\Honey.psm1", "Modules\Honey\HoneyAD.psm1", "Modules\Honey\HoneyData.psm1")
     $Dashboard = New-UDDashboard -Title "BlueHive 🐝 🍯 🐝" -Pages $Pages -EndpointInitialization $BSEndpoints -Theme $DarkDefault

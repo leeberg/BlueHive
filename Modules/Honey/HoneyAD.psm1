@@ -159,7 +159,7 @@ Function Get-HoneyADusers
     Write-AuditLog ("Running Function: Get-HoneyADusers")
 
     try {
-        $Users = Get-ADUser -Filter ("MiddleName -eq $HoneyExtensionCode") -Properties "DisplayName", "OtherName","whenCreated","whenChanged" @Cache:ConnectionInfo | Select-Object -Property DisplayName, whenCreated, whenChanged, DistinguishedName,Enabled,GivenName,Name,ObjectClass,ObjectGUID,OtherName,SamAccountName,SID,Surname,UserPrincipalName,@{Name="BHSyncTime"; Expression = {Get-Date -format u}},@{Name="ParentNetBios"; Expression = {$Domain}}
+        $Users = Get-ADUser -Filter ("MiddleName -eq $HoneyExtensionCode") -Properties "DisplayName", "OtherName","whenCreated","whenChanged" @Cache:ConnectionInfo | Select-Object -Property DisplayName, whenCreated, whenChanged, DistinguishedName,Enabled,GivenName,Name,ObjectClass,ObjectGUID,OtherName,SamAccountName,SID,Surname,UserPrincipalName,@{Name="BHSyncTime"; Expression = {Get-Date -format u}},@{Name="ParentNetBios"; Expression = {$Domain}},@{Name="AutoLogin"; Expression = {'Disabled'}}
         return $Users
     }
     catch {
