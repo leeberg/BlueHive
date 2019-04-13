@@ -64,7 +64,7 @@ Function Save-AllDomainControllers
 }
 
 
-Function Save-AllDDomainComputers
+Function Save-AllDomainComputers
 {
     Param(
         [Parameter(Mandatory=$true)] $DomainObject
@@ -215,19 +215,19 @@ Function Invoke-BHFullADSync
     $DomainObject = Save-ADDomain -Domain $DomainToSync
              
     Write-AuditLog -BSLogContent "Syncing Accounts from: $($DomainToSync)"
-    Save-AllADUsers -Domain $DomainObject
+    Save-AllADUsers -DomainObject $DomainObject
 
     Write-AuditLog -BSLogContent "Syncing Existing Honey Accounts from: $($DomainToSync)"
-    Save-AllADHoneyUsers -Domain $DomainObject
+    Save-AllADHoneyUsers -DomainObject $DomainObject
 
     Write-AuditLog -BSLogContent "Syncing Domain Computers from: $($DomainToSync)"
-    Save-AllDDomainComputers -Domain $DomainObject
+    Save-AllDomainComputers -DomainObject $DomainObject
 
     Write-AuditLog -BSLogContent "Syncing Domain Controllers from: $($DomainToSync)"
-    Save-AllDomainControllers -Domain $DomainObject
+    Save-AllDomainControllers -DomainObject $DomainObject
 
     Write-AuditLog -BSLogContent "Syncing Domain OUs from: $($DomainToSync)"
-    Save-AllADOUs -Domain $DomainObject
+    Save-AllADOUs -DomainObject $DomainObject
 
     Write-AuditLog -BSLogContent "AD Sync Complete!"
 

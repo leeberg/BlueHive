@@ -92,7 +92,7 @@ Function Get-AllADOrganizationalUnits
 }
 
 
-Function Get-BHADDomainControllers
+Function  Get-BHADDomainControllers
 {
     param(
         $Domain = ''
@@ -101,12 +101,17 @@ Function Get-BHADDomainControllers
     Write-AuditLog ("Running Function: Get-BHADDomainControllers")
 
     try{
-        $DomainControllers = Get-ADDomainController -Filter {Name -like '*'} @Cache:ConnectionInfo
+        $DomainControllers = Get-ADDomainController -Filter {Name -like '*'} @Cache:ConnectionInfo | Select-Object -Property HostName,Domain,Forest,Enabled,Name,OperatingSystem,IPv4Address,@{Name="BHSyncTime"; Expression = {Get-Date -format u}}
 
         return $DomainControllers
     }
     catch
     {
+        $Exception = $_.Exception
+        $ExceptionMessage = $Exception.Message
+        Write-AuditLog ("Failed to Create Random User: $($RandomUserDetails.samaccountname)!")
+        Write-ErrorLog ("Failed to Create Random User: $($RandomUserDetails.samaccountname)!")
+        Write-ErrorLog ("$($ExceptionMessage) -- $($Exception.InnerException)")
         return $null
     }
     
@@ -122,10 +127,10 @@ Function Get-BHADDomainComputers
         $Domain = ''
     )
    
-    Write-AuditLog ("Running Function: Get-BHADDomainControllers")
+    Write-AuditLog ("Running Function: Get-BHADDomainComputers")
 
     try{
-        $DomainComputers = Get-ADComputer -Filter {Name -like '*'} @Cache:ConnectionInfo
+        $DomainComputers = Get-ADComputer -Filter {Name -like '*'} @Cache:ConnectionInfo | Select-Object -Property DistinguishedName,DNSHostName,Enabled,Name,ObjectGUID,SID,@{Name="BHSyncTime"; Expression = {Get-Date -format u}}
 
         return $DomainComputers
     }
