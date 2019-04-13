@@ -114,6 +114,33 @@ Function Get-BHADDomainControllers
 
 }
 
+
+
+Function Get-BHADDomainComputers
+{
+    param(
+        $Domain = ''
+    )
+   
+    Write-AuditLog ("Running Function: Get-BHADDomainControllers")
+
+    try{
+        $DomainComputers = Get-ADComputer -Filter {Name -like '*'} @Cache:ConnectionInfo
+
+        return $DomainComputers
+    }
+    catch
+    {
+        return $null
+    }
+    
+
+
+}
+
+
+
+
 Function Get-HoneyADusers
 {
 

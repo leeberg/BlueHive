@@ -64,6 +64,38 @@ Function Save-AllDomainControllers
 }
 
 
+Function Save-AllDDomainComputers
+{
+    Param(
+        [Parameter(Mandatory=$true)] $DomainObject
+    )
+
+    <#
+    .SYNOPSIS 
+    Take a Collection of Objects and save it to the JSON file
+     
+    #>
+   
+    try{
+        $DomainComputers = Get-BHADDomainComputers -Domain ($DomainObject.Forest)
+        Write-BHADDomainComputer -DomainComputers $DomainComputers -DomainNetBiosName ($DomainObject.NetBIOSName)
+
+    }
+    catch{
+        $Exception = $_.Exception
+        $ExceptionMessage = $Exception.Message
+        Write-AuditLog ("Failed to Save-AllDomainComputer!")
+        Write-ErrorLog ("Failed to Save-AllDomainComputer: $($ExceptionMessage) -- $($Exception.InnerException)")
+        return $null
+    }
+    
+    
+
+}
+
+
+
+
 
 Function Save-AllADHoneyUsers
 {
@@ -187,6 +219,9 @@ Function Invoke-BHFullADSync
 
     Write-AuditLog -BSLogContent "Syncing Existing Honey Accounts from: $($DomainToSync)"
     Save-AllADHoneyUsers -Domain $DomainObject
+
+    Write-AuditLog -BSLogContent "Syncing Domain Computers from: $($DomainToSync)"
+    Save-AllDDomainComputers -Domain $DomainObject
 
     Write-AuditLog -BSLogContent "Syncing Domain Controllers from: $($DomainToSync)"
     Save-AllDomainControllers -Domain $DomainObject

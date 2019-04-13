@@ -11,7 +11,7 @@ New-UDPage -Name "Home" -Icon home -Endpoint {
     New-UDLayout -Columns 4 -Content {  
       
         New-UDCard -Id "card_Honey" -Title 'Deployed Honey Accounts' -Text ($HoneyUsers | Measure).Count  -BackgroundColor '#379af0' 
-        New-UDCard -Id "care_Deployments" -Title "Deployment Actions" -Text ($DeploymentHistory | Measure).Count  -BackgroundColor '#26c6da'
+        New-UDCard -Id "card_Deployments" -Title "Deployment Actions" -Text ($DeploymentHistory | Measure).Count  -BackgroundColor '#26c6da'
     
     }
 

@@ -228,7 +228,7 @@ Param(
     if(Test-Path($BHFile))
     {
          # Clear Existings
-        Clear-Content $BHFile -Force
+        Clear-Content $BHFile -Force -ErrorAction SilentlyContinue
     }
     else 
     {
@@ -279,7 +279,7 @@ Param (
         if(Test-Path($BHDomainUserAccountsPath))
         {
             # Clear Existings
-            Clear-Content $BHDomainUserAccountsPath -Force
+            Clear-Content $BHDomainUserAccountsPath -Force -ErrorAction SilentlyContinue
         }
         else 
         {
@@ -296,8 +296,8 @@ Param (
 Function Write-BHADDomainControllers
 {
     Param (
-        $DomainControllers,
-        $DomainNetBiosName
+        [Parameter(Mandatory=$true)] $DomainControllers,
+        [Parameter(Mandatory=$true)] $DomainNetBiosName
     )
 
         if($DomainControllers)
@@ -308,7 +308,7 @@ Function Write-BHADDomainControllers
             if(Test-Path($BHDomainControllersPath))
             {
                 # Clear Existings
-                Clear-Content $BHDomainControllersPath -Force
+                Clear-Content $BHDomainControllersPath -Force -ErrorAction SilentlyContinue
             }
             else 
             {
@@ -321,6 +321,34 @@ Function Write-BHADDomainControllers
     
 }
 
+
+Function Write-BHADDomainComputer
+{
+    Param (
+        [Parameter(Mandatory=$true)] $DomainComputers,
+        [Parameter(Mandatory=$true)] $DomainNetBiosName
+    )
+
+        if($DomainComputers)
+        {
+
+            $BHDomainComputersPath = ($BHDomainPath + '\' + $DomainNetBiosName + '\Computers.json')
+
+            if(Test-Path($BHDomainComputersPath))
+            {
+                # Clear Existings
+                Clear-Content $BHDomainComputersPath -Force -ErrorAction SilentlyContinue
+            }
+            else 
+            {
+                # Does not Exist
+            }
+
+            Write-BHJSON -BHFile $BHDomainComputersPath -BHObjectData $DomainComputers
+
+        }
+    
+}
 
 Function Get-BHADDomainControllers
 {
@@ -370,7 +398,7 @@ Function Write-BHUserHoneyAccountData
         if(Test-Path($BHUserHoneyAccountsPath))
         {
              # Clear Existings
-            Clear-Content $BHUserHoneyAccountsPath -Force
+            Clear-Content $BHUserHoneyAccountsPath -Force -ErrorAction SilentlyContinue
         }
         else 
         {
@@ -398,7 +426,7 @@ Function Write-BHOUData
         if(Test-Path($BHDomainOUPath))
         {
              # Clear Existings
-            Clear-Content $BHDomainOUPath -Force
+            Clear-Content $BHDomainOUPath -Force -ErrorAction SilentlyContinue
         }
         else 
         {
@@ -439,7 +467,7 @@ Param (
         if(Test-Path($DomainNameFilePath))
         {
              # Clear Existings
-            Clear-Content $DomainNameFilePath -Force
+            Clear-Content $DomainNameFilePath -Force -ErrorAction SilentlyContinue
         }
         else 
         {
@@ -467,7 +495,7 @@ Function Clear-BHUserAccountData
     if(Test-Path($BHDomainUserAccountsPath))
     {
         # Clear Existings
-        Clear-Content $BHDomainUserAccountsPath -Force
+        Clear-Content $BHDomainUserAccountsPath -Force -ErrorAction SilentlyContinue
     }
     else 
     {
@@ -487,7 +515,7 @@ Function Clear-BHADDomainControllers
     if(Test-Path($BHDomainControllersPath))
     {
          # Clear Existings
-        Clear-Content $BHDomainControllersPath -Force
+        Clear-Content $BHDomainControllersPath -Force -ErrorAction SilentlyContinue
     }
     else 
     {
@@ -508,7 +536,7 @@ Function Clear-BHUserHoneyAccountData
     if(Test-Path($BHUserHoneyAccountsPath))
     {
          # Clear Existings
-        Clear-Content $BHUserHoneyAccountsPath -Force
+        Clear-Content $BHUserHoneyAccountsPath -Force -ErrorAction SilentlyContinue
     }
     else 
     {
@@ -531,7 +559,7 @@ Function Clear-AllADOrganizationalUnits
     if(Test-Path($BHDomainOUPath))
     {
          # Clear Existings
-        Clear-Content $BHDomainOUPath -Force
+        Clear-Content $BHDomainOUPath -Force -ErrorAction SilentlyContinue
     }
     else 
     {
@@ -574,7 +602,7 @@ Function Write-DeploymentHistoryLog
             $NewJsonObject += $JsonObject
         }
         $NewJsonObject += $DeploymentRecordObject
-        Clear-Content $BHDeploymentHistoryFilePath
+        Clear-Content $BHDeploymentHistoryFilePath -Force -ErrorAction SilentlyContinue
     }
     else {
         

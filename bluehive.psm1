@@ -7,16 +7,12 @@
         [int]$Port = 10000
     )
 
-   
-
-    #$Cache:Loading = $true
-    #$Cache:ChartColorPalette = @('#5899DA', '#E8743B', '#19A979', '#ED4A7B', '#945ECF', '#13A4B4', '#525DF4', '#BF399E', '#6C8893', '#EE6868', '#2F6497')
-    
+    # This Caches the Connection Info so the other components and modules can utilze them
     $Cache:ConnectionInfo = @{
         Server = $Server
         Credential = $Credential
     }
-    
+
     $Cache:BlueHiveInfo = $BlueHiveFolder
     
     
@@ -33,8 +29,6 @@
             BackgroundColor =  "#272C33"
             FontColor = "#FFFFFF"
         }
-
-
         UDCard = @{
             BackgroundColor = "#272C33"
             FontColor = "#FFFFFF"
@@ -76,10 +70,8 @@
         # Probably not there yet.
     }
     
-
     
-    New-PSDrive –Name AD –PSProvider ActiveDirectory @Cache:ConnectionInfo –Root "//RootDSE/" -Scope Global 
-
+    New-PSDrive –Name AD –PSProvider ActiveDirectory @Cache:ConnectionInfo –Root "//RootDSE/" -Scope Global
 
     $Pages = @()
     $Pages += . (Join-Path $PSScriptRoot "pages\home.ps1")
