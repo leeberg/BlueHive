@@ -1,14 +1,12 @@
 # BlueHive Start Script
 
+# Set These Variables - and populate the Credential Object
 $Credential = Get-Credential
 $DomainControllerFQDN = 'BC-DC.berg.com'
+$BlueHiveFolder = 'C:\Users\lee\git\BlueHive'
 
 Import-Module .\bluehive.psd1 -Force
-Import-Module .\Modules\Honey\Honey.psm1 -Force
-Import-Module .\Modules\Honey\HoneyAD.psm1 -Force
-Import-Module .\Modules\Honey\HoneyData.psm1 -Force
 
 Get-UDDashboard | Stop-UDDashboard
 Get-UDRestApi | Stop-UDRestAPI
-Start-BHDash -Server $DomainControllerFQDN -Credential $Credential
-
+Start-BHDash -Server $DomainControllerFQDN -Credential $Credential -BlueHiveFolder $BlueHiveFolder

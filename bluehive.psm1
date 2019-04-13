@@ -13,8 +13,40 @@
         Credential = $Credential
     }
 
-    $Cache:BlueHiveInfo = $BlueHiveFolder
-    
+    #### DATA FOLDER SETUP - Cache Variables utilzed by "HoneyData Module"
+    # TODO would be neat to turn into an objects
+
+    # Setup-BHDataPaths
+    $Cache:BlueHiveFolder = $BlueHiveFolder
+
+    #Retrieved Data
+    $Cache:BHRetrievedPath =  $Cache:BlueHiveFolder + '\Data\Retrieved'
+    $Cache:BHDomainPath =  $Cache:BlueHiveFolder + '\Data\Retrieved\Domains'
+    $Cache:BHManagedPath =  $Cache:BlueHiveFolder + '\Data\Managed'
+
+    #LOG Paths
+    $Cache:BHLogFilePath = $Cache:BlueHiveFolder + '\Data\Logs\AuditLog.log' 
+    $Cache:BHErrorFilePath = $Cache:BlueHiveFolder + '\Data\Logs\ErrorLog.log'
+    $Cache:BHLogFolderPath = $Cache:BlueHiveFolder + '\Data\Logs' 
+    $Cache:BHDeploymentHistoryFilePath = $Cache:BlueHiveFolder + '\Data\Logs\Deployment.json'
+
+    #Data Generation Resources Path
+    $Cache:BSFirstNamesFile = $Cache:BlueHiveFolder + '\Data\Generation\FirstNames.txt'
+    $Cache:BSLastNamesFile = $Cache:BlueHiveFolder + '\Data\Generation\LastNames.txt'
+    $Cache:BSServiceAccountNamesFile = $Cache:BlueHiveFolder + '\Data\Generation\service-accounts.txt'
+
+
+    # Create Folders / Log Files
+    if((Test-Path -Path $Cache:BHRetrievedPath) -eq $false){New-Item -Path $Cache:BHRetrievedPath -ItemType Directory}
+    if((Test-Path -Path $Cache:BHDomainPath) -eq $false){New-Item -Path $Cache:BHDomainPath -ItemType Directory}
+    if((Test-Path -Path $Cache:BHLogFoBHManagedPathlderPath) -eq $false){New-Item -Path $Cache:BHManagedPath -ItemType Directory}
+    if((Test-Path -Path $Cache:BHLogFolderPath) -eq $false){New-Item -Path $Cache:BHLogFolderPath -ItemType Directory}
+    if((Test-Path -Path $Cache:BHLogFilePath) -eq $false){New-Item -Path $Cache:BHLogFilePath -ItemType File}
+    if((Test-Path -Path $Cache:BHErrorFilePath) -eq $false){New-Item -Path $Cache:BHErrorFilePath -ItemType File}
+
+    ####
+
+    #### THEME    
     
     $DarkDefault = New-UDTheme -Name "Basic" -Definition @{
         UDDashboard = @{

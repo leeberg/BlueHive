@@ -6,21 +6,6 @@
 # Then all the info for the that domain goes in it (users, groups, computers, OUs, DCs, Accounts, Honeys, ETC.)
 # Then we must update all references to be domain aware
 
-$BlueHiveFolder =  'C:\Users\lee\git\BlueHive'
-
-#Retrieved Data
-$BHDomainPath =  $BlueHiveFolder + '\Data\Retrieved\Domains'
-
-#LOG Paths
-$BHLogFilePath = $BlueHiveFolder + '\Data\Logs\AuditLog.log' 
-$BHErrorFilePath = $BlueHiveFolder + '\Data\Logs\ErrorLog.log'
-$BHDeploymentHistoryFilePath = $BlueHiveFolder + '\Data\Logs\Deployment.json'
-
-#Data Generation Resources Path
-$BSFirstNamesFile = $BlueHiveFolder + '\Data\Generation\FirstNames.txt'
-$BSLastNamesFile = $BlueHiveFolder + '\Data\Generation\LastNames.txt'
-$BSServiceAccountNamesFile = $BlueHiveFolder + '\Data\Generation\service-accounts.txt'
-
 
 Function Get-BHJSONObject 
 {
@@ -75,7 +60,7 @@ Function Get-BHAccountData
     {
 
    
-        $DomainFolders = ($BHDomainPath + '\') | Get-ChildItem | ?{ $_.PSIsContainer }
+        $DomainFolders = ($Cache:BHDomainPath + '\') | Get-ChildItem | ?{ $_.PSIsContainer }
         Foreach($Folder in $DomainFolders)
         {
             $DomainFolderPath = $Folder.FullName
@@ -88,7 +73,7 @@ Function Get-BHAccountData
     }
     else 
     {
-        $ResourcesJsonContent = Get-BHJSONObject -BHFile ($BHDomainPath + '\' + $DomainNetBIOSName + '\Accounts.json')
+        $ResourcesJsonContent = Get-BHJSONObject -BHFile ($Cache:BHDomainPath + '\' + $DomainNetBIOSName + '\Accounts.json')
 
         return $ResourcesJsonContent
     }
@@ -107,7 +92,7 @@ Function Get-BHComputerData
     if($DomainNetBIOSName -eq '')
     {
 
-        $ComputerFolders = ($BHDomainPath + '\') | Get-ChildItem | ?{ $_.PSIsContainer }
+        $ComputerFolders = ($Cache:BHDomainPath + '\') | Get-ChildItem | ?{ $_.PSIsContainer }
         Foreach($Folder in $ComputerFolders)
         {
             $DomainFolderPath = $Folder.FullName
@@ -120,7 +105,7 @@ Function Get-BHComputerData
     }
     else 
     {
-        $ResourcesJsonContent = Get-BHJSONObject -BHFile ($BHDomainPath + '\' + $DomainNetBIOSName + '\Computers.json')
+        $ResourcesJsonContent = Get-BHJSONObject -BHFile ($Cache:BHDomainPath + '\' + $DomainNetBIOSName + '\Computers.json')
 
         return $ResourcesJsonContent
     }
@@ -141,7 +126,7 @@ Function Get-BHDomainControllerData
     if($DomainNetBIOSName -eq '')
     {
 
-        $ComputerFolders = ($BHDomainPath + '\') | Get-ChildItem | ?{ $_.PSIsContainer }
+        $ComputerFolders = ($Cache:BHDomainPath + '\') | Get-ChildItem | ?{ $_.PSIsContainer }
         Foreach($Folder in $ComputerFolders)
         {
             $DomainFolderPath = $Folder.FullName
@@ -154,7 +139,7 @@ Function Get-BHDomainControllerData
     }
     else 
     {
-        $ResourcesJsonContent = Get-BHJSONObject -BHFile ($BHDomainPath + '\' + $DomainNetBIOSName + '\Computers.json')
+        $ResourcesJsonContent = Get-BHJSONObject -BHFile ($Cache:BHDomainPath + '\' + $DomainNetBIOSName + '\Computers.json')
 
         return $ResourcesJsonContent
     }
@@ -178,7 +163,7 @@ Function Get-BHOuData
     {
 
 
-        $DomainFolders = ($BHDomainPath + '\') | Get-ChildItem | ?{ $_.PSIsContainer }
+        $DomainFolders = ($Cache:BHDomainPath + '\') | Get-ChildItem | ?{ $_.PSIsContainer }
         Foreach($Folder in $DomainFolders)
         {
             $DomainFolderPath = $Folder.FullName
@@ -191,7 +176,7 @@ Function Get-BHOuData
     }
     else 
     {
-        $ResourcesJsonContent = Get-BHJSONObject -BHFile ($BHDomainPath + '\' + $DomainNetBIOSName + '\OUs.json')
+        $ResourcesJsonContent = Get-BHJSONObject -BHFile ($Cache:BHDomainPath + '\' + $DomainNetBIOSName + '\OUs.json')
         return $ResourcesJsonContent
     }
 
@@ -213,7 +198,7 @@ Function Get-BHHoneyAccountData
     {
 
    
-        $DomainFolders = ($BHDomainPath + '\') | Get-ChildItem | ?{ $_.PSIsContainer }
+        $DomainFolders = ($Cache:BHDomainPath + '\') | Get-ChildItem | ?{ $_.PSIsContainer }
         Foreach($Folder in $DomainFolders)
         {
             $DomainFolderPath = $Folder.FullName
@@ -226,7 +211,7 @@ Function Get-BHHoneyAccountData
     }
     else 
     {
-        $ResourcesJsonContent = Get-BHJSONObject -BHFile ($BHDomainPath + '\' + $DomainNetBIOSName + '\HoneyAccounts.json')
+        $ResourcesJsonContent = Get-BHJSONObject -BHFile ($Cache:BHDomainPath + '\' + $DomainNetBIOSName + '\HoneyAccounts.json')
         return $ResourcesJsonContent
     }
     
@@ -246,7 +231,7 @@ Function Get-BHDHoneyUserDetailsData
     )
 
    
-    $ResourcesJsonContent = Get-BHJSONObject -BHFile ($BHDomainPath + '\' + $DomainNetBIOSName + '\HoneyAccounts.json')
+    $ResourcesJsonContent = Get-BHJSONObject -BHFile ($Cache:BHDomainPath + '\' + $DomainNetBIOSName + '\HoneyAccounts.json')
 
     $UserDetails = $ResourcesJsonContent | Where-Object DistinguishedName -eq $DistinguishedName
 
@@ -260,7 +245,7 @@ Function Get-BHDomainData
     
     $DomainData = @()
 
-    $DomainFolders = Get-ChildItem -Path $BHDomainPath | ?{ $_.PSIsContainer }
+    $DomainFolders = Get-ChildItem -Path $Cache:BHDomainPath | ?{ $_.PSIsContainer }
     
     foreach($Folder in $DomainFolders)
     {
@@ -286,7 +271,7 @@ Function Get-BHDomainControllerData
     if($DomainNetBIOSName -eq '')
     {
 
-        $DomainFolders = ($BHDomainPath + '\') | Get-ChildItem | ?{ $_.PSIsContainer }
+        $DomainFolders = ($Cache:BHDomainPath + '\') | Get-ChildItem | ?{ $_.PSIsContainer }
         Foreach($Folder in $DomainFolders)
         {
             $DomainFolderPath = $Folder.FullName
@@ -299,7 +284,7 @@ Function Get-BHDomainControllerData
     }
     else 
     {
-        $ResourcesJsonContent = Get-BHJSONObject -BHFile ($BHDomainPath + '\' + $DomainNetBIOSName + '\DCs.json')
+        $ResourcesJsonContent = Get-BHJSONObject -BHFile ($Cache:BHDomainPath + '\' + $DomainNetBIOSName + '\DCs.json')
 
         return $ResourcesJsonContent
     }
@@ -313,7 +298,7 @@ Function Get-BHDomainControllerData
 Function Get-BHDeploymentHistoryData()
 {
 
-    $ResourcesJsonContent = Get-BHJSONObject -BHFile $BHDeploymentHistoryFilePath
+    $ResourcesJsonContent = Get-BHJSONObject -BHFile $Cache:BHDeploymentHistoryFilePath
 
     return $ResourcesJsonContent    
     
@@ -375,7 +360,7 @@ Param (
     if($AccountData)
     {
 
-        $BHDomainUserAccountsPath = ($BHDomainPath + '\' + $DomainNetBiosName + '\Accounts.json')
+        $BHDomainUserAccountsPath = ($Cache:BHDomainPath + '\' + $DomainNetBiosName + '\Accounts.json')
 
         if(Test-Path($BHDomainUserAccountsPath))
         {
@@ -404,7 +389,7 @@ Function Write-BHADDomainControllers
         if($DomainControllers)
         {
 
-            $BHDomainControllersPath = ($BHDomainPath + '\' + $DomainNetBiosName + '\DCs.json')
+            $BHDomainControllersPath = ($Cache:BHDomainPath + '\' + $DomainNetBiosName + '\DCs.json')
 
             if(Test-Path($BHDomainControllersPath))
             {
@@ -433,7 +418,7 @@ Function Write-BHADDomainComputer
         if($DomainComputers)
         {
 
-            $BHDomainComputersPath = ($BHDomainPath + '\' + $DomainNetBiosName + '\Computers.json')
+            $BHDomainComputersPath = ($Cache:BHDomainPath + '\' + $DomainNetBiosName + '\Computers.json')
 
             if(Test-Path($BHDomainComputersPath))
             {
@@ -461,7 +446,7 @@ Function Write-BHUserHoneyAccountData
     if($AccountData)
     {
 
-        $BHUserHoneyAccountsPath = ($BHDomainPath + '\' + $DomainNetBiosName + '\HoneyAccounts.json')
+        $BHUserHoneyAccountsPath = ($Cache:BHDomainPath + '\' + $DomainNetBiosName + '\HoneyAccounts.json')
 
         if(Test-Path($BHUserHoneyAccountsPath))
         {
@@ -489,7 +474,7 @@ Function Write-BHOUData
     
     If($OUData)
     {
-        $BHDomainOUPath = ($BHDomainPath + '\' + $DomainNetBiosName + '\OUs.json')
+        $BHDomainOUPath = ($Cache:BHDomainPath + '\' + $DomainNetBiosName + '\OUs.json')
 
         if(Test-Path($BHDomainOUPath))
         {
@@ -519,7 +504,7 @@ Param (
     If($DomainObject)
     {
         $DomainName = $DomainObject.NetBIOSName
-        $DomainNameFolderPath = ($BHDomainPath + '\' + $DomainName)
+        $DomainNameFolderPath = ($Cache:BHDomainPath + '\' + $DomainName)
         
         if(Test-Path($DomainNameFolderPath))
         {
@@ -530,7 +515,7 @@ Param (
             New-Item -Path $DomainNameFolderPath -ItemType Directory
         }
 
-        $DomainNameFilePath = ($BHDomainPath + '\' + $DomainName + '\Domain.json')
+        $DomainNameFilePath = ($Cache:BHDomainPath + '\' + $DomainName + '\Domain.json')
 
         if(Test-Path($DomainNameFilePath))
         {
@@ -558,7 +543,7 @@ Function Clear-BHUserAccountData
         $DomainNetBiosName = ''
     )
 
-    $BHDomainUserAccountsPath = ($BHDomainPath + '\' + $DomainNetBiosName + '\Accounts.json')
+    $BHDomainUserAccountsPath = ($Cache:BHDomainPath + '\' + $DomainNetBiosName + '\Accounts.json')
 
     if(Test-Path($BHDomainUserAccountsPath))
     {
@@ -578,7 +563,7 @@ Function Clear-BHADDomainControllers
         $DomainNetBiosName = ''
     )
 
-    $BHDomainControllersPath = ($BHDomainPath + '\' + $DomainNetBiosName + '\DCs.json')
+    $BHDomainControllersPath = ($Cache:BHDomainPath + '\' + $DomainNetBiosName + '\DCs.json')
 
     if(Test-Path($BHDomainControllersPath))
     {
@@ -599,7 +584,7 @@ Function Clear-BHUserHoneyAccountData
         $DomainNetBiosName = ''
     )
 
-    $BHUserHoneyAccountsPath = ($BHDomainPath + '\' + $DomainNetBiosName + '\HoneyAccounts.json')
+    $BHUserHoneyAccountsPath = ($Cache:BHDomainPath + '\' + $DomainNetBiosName + '\HoneyAccounts.json')
 
     if(Test-Path($BHUserHoneyAccountsPath))
     {
@@ -621,7 +606,7 @@ Function Clear-AllADOrganizationalUnits
         $DomainNetBiosName = ''
     )
 
-    $BHDomainOUPath = ($BHDomainPath + '\' + $DomainNetBiosName + '\OUs.json')
+    $BHDomainOUPath = ($Cache:BHDomainPath + '\' + $DomainNetBiosName + '\OUs.json')
 
 
     if(Test-Path($BHDomainOUPath))
@@ -662,15 +647,15 @@ Function Write-DeploymentHistoryLog
 
 
     #TODO - Get JSON and update it  - probably not very managable... but w/e
-    if(Test-Path -Path $BHDeploymentHistoryFilePath)
+    if(Test-Path -Path $Cache:BHDeploymentHistoryFilePath)
     {
-        if(Get-Content $BHDeploymentHistoryFilePath -raw)
+        if(Get-Content $Cache:BHDeploymentHistoryFilePath -raw)
         {
-            $JsonObject = ConvertFrom-Json -InputObject (Get-Content $BHDeploymentHistoryFilePath -raw)
+            $JsonObject = ConvertFrom-Json -InputObject (Get-Content $Cache:BHDeploymentHistoryFilePath -raw)
             $NewJsonObject += $JsonObject
         }
         $NewJsonObject += $DeploymentRecordObject
-        Clear-Content $BHDeploymentHistoryFilePath -Force -ErrorAction SilentlyContinue
+        Clear-Content $Cache:BHDeploymentHistoryFilePath -Force -ErrorAction SilentlyContinue
     }
     else {
         
@@ -679,7 +664,7 @@ Function Write-DeploymentHistoryLog
   
 
 
-    Write-BHJSON -BHFile $BHDeploymentHistoryFilePath -BHObjectData $NewJsonObject
+    Write-BHJSON -BHFile $Cache:BHDeploymentHistoryFilePath -BHObjectData $NewJsonObject
 
 }
 
@@ -690,7 +675,7 @@ Param (
     $BSLogContent
 )
     $BSLogContentFormatted = ($(Get-Date -Format 'yyyy-MM-dd hh:mm:ss') + ' : ' + $BSLogContent)
-    $BSLogContentFormatted | Out-File $BHLogFilePath -Append
+    $BSLogContentFormatted | Out-File $Cache:BHLogFilePath -Append
 }
 
 Function Write-ErrorLog
@@ -699,7 +684,7 @@ Param (
     $BSLogContent
 )
     $BSLogContentFormatted = ($(Get-Date -Format 'yyyy-MM-dd hh:mm:ss') + ' : ' + $BSLogContent)
-    $BSLogContentFormatted | Out-File $BHErrorFilePath -Append
+    $BSLogContentFormatted | Out-File $Cache:BHErrorFilePath -Append
 }
 
 
@@ -739,14 +724,14 @@ Param(
 
 Function Get-RandomFirstName
 {
-    $FirstName = Get-BHTextFile -BHFile $BSFirstNamesFile | Get-Random
+    $FirstName = Get-BHTextFile -BHFile $Cache:BSFirstNamesFile | Get-Random
     $FirstName = $FirstName.substring(0,1).toupper()+$FirstName.substring(1).tolower()
     return $FirstName
 }
 
 Function Get-RandomLastName
 {
-    $LastName = Get-BHTextFile -BHFile $BSLastNamesFile | Get-Random
+    $LastName = Get-BHTextFile -BHFile $Cache:BSLastNamesFile | Get-Random
     $LastName = $LastName.substring(0,1).toupper()+$LastName.substring(1).tolower()
     return $LastName
 }
@@ -767,7 +752,6 @@ Function Get-RandomPerson
 
     }
 
-
     Return $RandomUserObject
 
 }
@@ -776,7 +760,7 @@ Function Get-RandomPerson
 
 Function Get-RandomServiceAccount
 {
-    $ServiceAccountName = Get-BHTextFile -BHFile $BSServiceAccountNamesFile | Get-Random
+    $ServiceAccountName = Get-BHTextFile -BHFile $Cache:BSServiceAccountNamesFile | Get-Random
     # TODO SET SPN
 
     $ServiceAccountName = $ServiceAccountName + '_' + (Get-Random -Minimum 1 -Maximum 999 )
@@ -793,5 +777,3 @@ Function Get-RandomServiceAccount
     Return $RandomServiceAccount
 
 }
-
-
