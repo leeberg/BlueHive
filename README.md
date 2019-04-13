@@ -37,7 +37,7 @@
 * One Click to Remove Honey Users from Active Directory
 
 ## Drawbacks / Issues
-* Service Accounts will be **BUSTED** by [HoneyPot Buster](https://github.com/JavelinNetworks/HoneypotBuster) - I have not yet implemented a good way to update values like "lastlogontimestamp" to reduce the Fank Rank
+* Service Accounts will be **BUSTED** by [HoneyPot Buster](https://github.com/JavelinNetworks/HoneypotBuster) - I have not yet implemented a good way to update values like "lastlogontimestamp" to reduce the Fank Rank. **NOTE** - Currently working on implementing a Scheduled Endpoint, that will "Login" with specified accounts on a schedule.
 * Data storage via json files on disk 🤷
 * Only "half-way" supports multiple domains, needs some data management work needs to be completed
 * "OtherName" of created token objects have value of 1337 - this is the identifier for a honey object used by this. Ideally accounts would be independently tracked outside of such a value.
@@ -45,8 +45,11 @@
 * Some... LESS THAN efficient powershell scripting ;)
 
 ## Usage
-1. **SETUP** - Populate your own environmental variables in the "start.ps1" and where you would like bluehive to store it's data by populating the ```$BlueHiveFolder``` variable in `HoneyData.psm1` script file - *Sorry - haven't variablized this yet*... :(
-2. Use the start script to connect to active directory
+1. **SETUP** - Populate your own environmental variables in the "start.ps1" script. Specifically the folowing variables:
+   * ``$DomainControllerFQDN`` - FQDN of the domain controller bluehive will interact with.
+   * ``$BlueHiveFolder`` EX: 'C:\Users\lee\git\BlueHive' - Data Storage for Bluehive
+   * ``$AutoLoginServer`` FQDN of servce where new powershell sessions will login with honey accounts (Honey accoutns must have login rights).
+2. Use the start script to connect to active directory and startup the dashboard.
 3. Open the "Domain Connection" page and initiate a new domain sync by specifying your domain name and clicking the "Sync" button.
 4. Verify Domain Information in the "Existing Domain Connection" Pane. **Note - at this point you should have domain data populated in your `Data\Retrieved\Domains` folder
 5. Use Deployment Page to deploy new Honey Account
