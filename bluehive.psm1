@@ -3,6 +3,7 @@
     param(
         [string]$BlueHiveFolder,
         [string]$Server,
+        [string]$AutoLoginServer,
         [PSCredential]$Credential,
         [int]$Port = 10000
     )
@@ -39,7 +40,7 @@
     # Create Folders / Log Files
     if((Test-Path -Path $Cache:BHRetrievedPath) -eq $false){New-Item -Path $Cache:BHRetrievedPath -ItemType Directory}
     if((Test-Path -Path $Cache:BHDomainPath) -eq $false){New-Item -Path $Cache:BHDomainPath -ItemType Directory}
-    if((Test-Path -Path $Cache:BHLogFoBHManagedPathlderPath) -eq $false){New-Item -Path $Cache:BHManagedPath -ItemType Directory}
+    if((Test-Path -Path $Cache:BHManagedPath) -eq $false){New-Item -Path $Cache:BHManagedPath -ItemType Directory}
     if((Test-Path -Path $Cache:BHLogFolderPath) -eq $false){New-Item -Path $Cache:BHLogFolderPath -ItemType Directory}
     if((Test-Path -Path $Cache:BHLogFilePath) -eq $false){New-Item -Path $Cache:BHLogFilePath -ItemType File}
     if((Test-Path -Path $Cache:BHErrorFilePath) -eq $false){New-Item -Path $Cache:BHErrorFilePath -ItemType File}
@@ -91,7 +92,7 @@
         }
     }
 
-
+    # Import Active Directory
     Import-Module ActiveDirectory
 
     Try{
@@ -102,7 +103,7 @@
         # Probably not there yet.
     }
     
-    
+    # Connect to AD
     New-PSDrive –Name AD –PSProvider ActiveDirectory @Cache:ConnectionInfo –Root "//RootDSE/" -Scope Global
 
     $Pages = @()
@@ -115,9 +116,11 @@
 
 
     # Scheduled Endpoints for User Logins
+    $Cache:AutoLoginServer = $AutoLoginServer
     $10MinSchedule = New-UDEndpointSchedule -Every 10 -Minute 
     
-    $Endpoint = New-UDEndpoint -Schedule $10MinSchedule -Endpoint {
+    #TODO Move this to it's own module
+    $AutoLoginEndpoint = New-UDEndpoint -Schedule $10MinSchedule -Endpoint {
         
         $HoneyAccounts = Get-BHHoneyAccountData
         ForEach($HoneyUser in $HoneyAccounts)
@@ -129,7 +132,8 @@
                 Set-ADAccountPassword -Identity $HoneyUser.DistinguishedName -Reset -NewPassword $RandomPassword @Cache:ConnectionInfo 
                 $HoneyCred = New-Object System.Management.Automation.PSCredential(($HoneyUser.ParentNetBios+'\'+$HoneyUser.name),$RandomPassword)
 
-                $HoneySession = New-PSSession -Credential $HoneyCred -ComputerName 'BC-DC.berg.com'
+
+                $HoneySession = New-PSSession -Credential $HoneyCred -ComputerName $Cache:AutoLoginServer
                 Invoke-Command $HoneySession -Scriptblock { get-aduser -filter * }
                 Remove-PSSession -Session $HoneySession
 
@@ -147,7 +151,8 @@
 
 
 
-    
+    #Startup the Dashboard
+    # TODO add AutoLogin Endpoint
     $BSEndpoints = New-UDEndpointInitialization -Module @("Modules\Honey\Honey.psm1", "Modules\Honey\HoneyAD.psm1", "Modules\Honey\HoneyData.psm1")
     $Dashboard = New-UDDashboard -Title "BlueHive 🐝 🍯 🐝" -Pages $Pages -EndpointInitialization $BSEndpoints -Theme $DarkDefault
 
