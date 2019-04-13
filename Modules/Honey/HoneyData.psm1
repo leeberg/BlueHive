@@ -275,6 +275,38 @@ Function Get-BHDomainData
 }
 
 
+Function Get-BHDomainControllerData
+{
+    param(
+        $DomainNetBIOSName = 'berg'
+    )
+
+    $Data = @()
+
+    if($DomainNetBIOSName -eq '')
+    {
+
+        $DomainFolders = ($BHDomainPath + '\') | Get-ChildItem | ?{ $_.PSIsContainer }
+        Foreach($Folder in $DomainFolders)
+        {
+            $DomainFolderPath = $Folder.FullName
+            $DomainJsonFile  = Get-BHJSONObject -BHFile ($DomainFolderPath + '\DCs.json')
+            $DomainData = $DomainData + $DomainJsonFile
+        }
+
+        return $DomainData
+        
+    }
+    else 
+    {
+        $ResourcesJsonContent = Get-BHJSONObject -BHFile ($BHDomainPath + '\' + $DomainNetBIOSName + '\DCs.json')
+
+        return $ResourcesJsonContent
+    }
+
+}
+
+
 
 
 
@@ -418,39 +450,6 @@ Function Write-BHADDomainComputer
         }
     
 }
-
-Function Get-BHADDomainControllers
-{
-    param(
-        $DomainNetBIOSName = 'berg'
-    )
-
-    $Data = @()
-
-    if($DomainNetBIOSName -eq '')
-    {
-
-        $DomainFolders = ($BHDomainPath + '\') | Get-ChildItem | ?{ $_.PSIsContainer }
-        Foreach($Folder in $DomainFolders)
-        {
-            $DomainFolderPath = $Folder.FullName
-            $DomainJsonFile  = Get-BHJSONObject -BHFile ($DomainFolderPath + '\DCs.json')
-            $DomainData = $DomainData + $DomainJsonFile
-        }
-
-        return $DomainData
-        
-    }
-    else 
-    {
-        $ResourcesJsonContent = Get-BHJSONObject -BHFile ($BHDomainPath + '\' + $DomainNetBIOSName + '\DCs.json')
-
-        return $ResourcesJsonContent
-    }
-
-}
-
-
 
 Function Write-BHUserHoneyAccountData
 {

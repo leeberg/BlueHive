@@ -12,7 +12,7 @@ function Get-BHDomain {
 
     Write-AuditLog ("Running Function: Get-BHDomain")
 
-    $RetrievedDomain = Get-ADDomain $DomainName @Cache:ConnectionInfo | Select-Object -Property DistinguishedName,DNSRoot,DomainControllersContainer,DomainMode,DomainSID,Forest,InfrastructureMaster,Name,NetBIOSName,ObjectGUID, PDCEmulator,ReplicaDirectoryServers,RIDMaster,SystemsContainer,UsersContainer,@{Name="BHSyncTime"; Expression = {Get-Date -format u}}
+    $RetrievedDomain = Get-ADDomain $DomainName @Cache:ConnectionInfo | Select-Object -Property DistinguishedName,DNSRoot,DomainControllersContainer,DomainMode,DomainSID,Forest,InfrastructureMaster,Name,NetBIOSName,ObjectGUID, PDCEmulator,RIDMaster,SystemsContainer,UsersContainer,@{Name="BHSyncTime"; Expression = {Get-Date -format u}}
      
 
     if($RetrievedDomain)
@@ -102,16 +102,17 @@ Function  Get-BHADDomainControllers
 
     try{
         $DomainControllers = Get-ADDomainController -Filter {Name -like '*'} @Cache:ConnectionInfo | Select-Object -Property HostName,Domain,Forest,Enabled,Name,OperatingSystem,IPv4Address,@{Name="BHSyncTime"; Expression = {Get-Date -format u}}
-
+        
         return $DomainControllers
     }
     catch
     {
         $Exception = $_.Exception
         $ExceptionMessage = $Exception.Message
-        Write-AuditLog ("Failed to Create Random User: $($RandomUserDetails.samaccountname)!")
-        Write-ErrorLog ("Failed to Create Random User: $($RandomUserDetails.samaccountname)!")
+        Write-AuditLog ("Failed to Get-BHADDomainControllers: $($Domain)!")
+        Write-ErrorLog ("Failed to Get-BHADDomainControllers: $($Domain)!")
         Write-ErrorLog ("$($ExceptionMessage) -- $($Exception.InnerException)")
+        Write-Error $Exception
         return $null
     }
     
@@ -326,7 +327,7 @@ Function Invoke-HoneyUserAccount
     {
         # IF Service account - generate a different format and SPN
         $RandomUserDetails = Get-RandomServiceAccount
-        $RandomDC = (Get-BHADDomainControllers | Get-Random | Select-Object -Property HostName).HostName
+        $RandomDC = (Get-BHDomainControllerData | Get-Random | Select-Object -Property HostName).HostName
         $RandomServiceClass = @('MSSQLSvc','DNS','ldap','NTFrs',(New-Guid).Guid),'WEB','iisadmin','dhcp','netlogon' | Get-Random
         $RandomServicePort = @('80','8080','8081','1433','1434','443','4022','135','5432','5433',(Get-Random -Minimum 125 -Maximum 5000)) | Get-Random
         

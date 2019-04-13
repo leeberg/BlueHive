@@ -36,17 +36,18 @@ Function Save-AllADUsers
 
 Function Save-AllDomainControllers
 {
-    Param(
-        [Parameter(Mandatory=$true)] $DomainObject
-    )
-
     <#
     .SYNOPSIS 
     Take a Collection of Objects and save it to the JSON file
      
     #>
-   
+
+    Param(
+        [Parameter(Mandatory=$true)] $DomainObject
+    )
+
     try{
+        
         $DomainControllers = Get-BHADDomainControllers -Domain ($DomainObject.Forest)
         Write-BHADDomainControllers -DomainControllers $DomainControllers -DomainNetBiosName ($DomainObject.NetBIOSName)
 
@@ -66,15 +67,17 @@ Function Save-AllDomainControllers
 
 Function Save-AllDomainComputers
 {
-    Param(
-        [Parameter(Mandatory=$true)] $DomainObject
-    )
-
     <#
     .SYNOPSIS 
     Take a Collection of Objects and save it to the JSON file
      
     #>
+
+    Param(
+        [Parameter(Mandatory=$true)] $DomainObject
+    )
+
+    
    
     try{
         $DomainComputers = Get-BHADDomainComputers -Domain ($DomainObject.Forest)
