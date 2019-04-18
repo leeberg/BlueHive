@@ -137,6 +137,7 @@
                 Set-ADAccountPassword -Identity $HoneyUser.DistinguishedName -Reset -NewPassword $RandomPassword @Cache:ConnectionInfo 
                 $HoneyCred = New-Object System.Management.Automation.PSCredential(($HoneyUserDetails.ParentNetBios+'\'+$HoneyUserDetails.name),$RandomPassword)
 
+                ## TODO - Rights handling for login server - Documentation?
                 #Login to your Specified Login Server, Run a command, and Close Session
                 $HoneySession = New-PSSession -Credential $HoneyCred -ComputerName $Cache:AutoLoginServer
                 $Command = Invoke-Command $HoneySession -Scriptblock { Get-AdUser -Identity $args[0] } -ArgumentList ($HoneyUser.DistinguishedName)
