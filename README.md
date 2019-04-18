@@ -35,6 +35,7 @@
 * Management of Honey Pot User (Add/Remove/Modify)
 * Track History of Honey User Deployments
 * One Click to Remove Honey Users from Active Directory
+* Scheduling of Automatic Login for Accounts so they have AD login properties update to avoid obvious honeypot busting
 
 ## Drawbacks / Issues
 * Service Accounts will be **BUSTED** by [HoneyPot Buster](https://github.com/JavelinNetworks/HoneypotBuster) - I have not yet implemented a good way to update values like "lastlogontimestamp" to reduce the Fank Rank. **NOTE** - Currently working on implementing a Scheduled Endpoint, that will "Login" with specified accounts on a schedule.
