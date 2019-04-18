@@ -3,7 +3,7 @@
 New-UDPage -Name "Managment" -Icon wrench -Content {
    
         
-    New-UDGrid -Id "ManagedHoneyAccountUsersGrid" -Title "Managed Honey Account Users" -Headers @("Name", "DeploymentDate" ,"Enabled", "Modify", "Delete","Automate") -Properties @("DisplayName", "whenCreated", "Enabled", "Modify","Delete","Automate") -Endpoint {    
+    New-UDGrid -Id "ManagedHoneyAccountUsersGrid" -Title "Managed Honey Account Users" -Headers @("Name", "DeploymentDate" ,"Enabled", "AutoLogin", "Modify", "Delete","Automate") -Properties @("DisplayName", "whenCreated", "Enabled","AutoLogin", "Modify","Delete","Automate") -Endpoint {    
         $HoneyAccounts = Get-BHHoneyAccountData
         $HoneyAccounts | ForEach-Object{    
 
@@ -13,6 +13,7 @@ New-UDPage -Name "Managment" -Icon wrench -Content {
                 Enabled = $_.Enabled
                 DistinguishedName = $_.DistinguishedName
                 Domain = $_.ParentNetBios
+                AutoLogin = $_.AutoLogin
 
                 Modify = New-UDButton -Text "Modify" -OnClick (
                     
@@ -113,6 +114,9 @@ New-UDPage -Name "Managment" -Icon wrench -Content {
                                             }
                                             else {
                                                 New-UDInputAction -Toast "Added to Scheduled Endpoint!"
+                                                Set-HoneyUserAutoLogin -UserDistinguishedName $DistinguishedName -AutoLoginSetting $true
+                                                Sync-UDElement -Id "ManagedHoneyAccountUsersGrid" -Broadcast
+
                                             }
                                             
                                         }

@@ -1,4 +1,4 @@
-﻿New-UDPage -Name "Deployment" -Icon empire -Endpoint {
+﻿New-UDPage -Name "Deployment" -Icon user -Endpoint {
 
     $OUs = Get-BHOuData
     $Domains = Get-BHDomainData

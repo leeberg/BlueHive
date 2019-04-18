@@ -183,6 +183,118 @@ Function Get-BHOuData
     
 }
 
+Function Set-HoneyUserAutoLogin
+{
+    param(
+        [Parameter(Mandatory=$true)] $UserDistinguishedName,
+        $AutoLoginSetting = $false,
+        $LoginTime = 'NEVER',
+        $isUpdate = $false
+    )
+
+    $ExistingHoneyAutoLogins = Get-BHJSONObject -BHFile ($Cache:AutoLoginTrackerFile)
+
+    # I am Disabling Auto Login
+    if($AutoLoginSetting -eq $false)
+    {
+        if($ExistingHoneyAutoLogins.DistinguishedName -contains $UserDistinguishedName)
+        {
+            
+            $NewObject = @()
+
+            if(Test-Path -Path $Cache:AutoLoginTrackerFile)
+            {
+                if(Get-Content $Cache:AutoLoginTrackerFile -raw)
+                {
+                    $JsonObject = ConvertFrom-Json -InputObject (Get-Content $Cache:AutoLoginTrackerFile -raw)
+                    
+                    
+                    $NewObject = $JsonObject | Where-Object {$_.DistinguishedName -ne $UserDistinguishedName}
+                    Clear-Content $Cache:AutoLoginTrackerFile -Force -ErrorAction SilentlyContinue
+                    Write-BHJSON -BHFile $Cache:AutoLoginTrackerFile -BHObjectData $NewObject
+                }
+
+                
+            }
+            
+        }
+    }
+    
+    # I am Enabling Auto Login
+    if($AutoLoginSetting -eq $true -and $isUpdate -eq $false) 
+    {
+        if($ExistingHoneyAutoLogins.DistinguishedName -notcontains $UserDistinguishedName )
+        {
+ 
+            #### Create PS Object
+            $AutoLoginRecordObject = [PSCustomObject]@{
+                DistinguishedName = $UserDistinguishedName
+                lastlogin = $LoginTime
+                enabledtime = (Get-Date -format u)
+            }
+
+            $NewJsonObject = @()
+
+            #TODO - Get JSON and update it  - probably not very managable... but w/e
+            if(Test-Path -Path $Cache:AutoLoginTrackerFile)
+            {
+                if(Get-Content $Cache:AutoLoginTrackerFile -raw)
+                {
+                    $JsonObject = ConvertFrom-Json -InputObject (Get-Content $Cache:AutoLoginTrackerFile -raw)
+                    $NewJsonObject += $JsonObject
+                }
+                $NewJsonObject += $AutoLoginRecordObject
+                Clear-Content $Cache:AutoLoginTrackerFile -Force -ErrorAction SilentlyContinue
+            }
+            else {
+                
+                $NewJsonObject = $AutoLoginRecordObject
+            }
+        
+
+            Write-BHJSON -BHFile $Cache:AutoLoginTrackerFile -BHObjectData $NewJsonObject
+
+        }
+    }
+    
+    # I am updating Login Time
+    if($AutoLoginSetting -eq $true -and $isUpdate -eq $true) 
+    {
+        if(Test-Path -Path $Cache:AutoLoginTrackerFile)
+        {
+            if(Get-Content $Cache:AutoLoginTrackerFile -raw)
+            {
+                $HoneyAutoLogins = ConvertFrom-Json -InputObject (Get-Content $Cache:AutoLoginTrackerFile -raw)
+              
+                ForEach($Object in $HoneyAutoLogins)
+                {
+                    If($Object.DistinguishedName -eq $UserDistinguishedName)
+                    {
+                        $Object.lastlogin = (Get-Date -format u)
+                    }
+                }
+
+                Clear-Content $Cache:AutoLoginTrackerFile -Force -ErrorAction SilentlyContinue
+                Write-BHJSON -BHFile $Cache:AutoLoginTrackerFile -BHObjectData $HoneyAutoLogins
+            }
+           
+        }
+    }
+    
+
+}
+
+
+Function Get-HoneyUserAutoLogin
+{
+    param(
+        $DomainNetBIOSName = ''
+    )
+
+    $ResourcesJsonContent = Get-BHJSONObject -BHFile ($Cache:AutoLoginTrackerFile)
+    return $ResourcesJsonContent
+      
+}
 
 
 
@@ -192,31 +304,42 @@ Function Get-BHHoneyAccountData
         $DomainNetBIOSName = ''
     )
 
-    $DomainData = @()
+
+
+    $HoneyUserData = @()
 
     if($DomainNetBIOSName -eq '')
     {
 
-   
         $DomainFolders = ($Cache:BHDomainPath + '\') | Get-ChildItem | ?{ $_.PSIsContainer }
         Foreach($Folder in $DomainFolders)
         {
             $DomainFolderPath = $Folder.FullName
-            $DomainJsonFile  = Get-BHJSONObject -BHFile ($DomainFolderPath + '\HoneyAccounts.json')
-            $DomainData = $DomainData + $DomainJsonFile
+            $HoneyUserObject  = Get-BHJSONObject -BHFile ($DomainFolderPath + '\HoneyAccounts.json')
+            $HoneyUserData = $HoneyUserData + $HoneyUserObject
         }
 
-        return $DomainData
+        $AutoLoginHoneyUsers = Get-HoneyUserAutoLogin
+
+        ForEach($HoneyUser in $HoneyUserData)
+        {
+            If($AutoLoginHoneyUsers.DistinguishedName -contains $HoneyUser.DistinguishedName)
+            {
+                $HoneyUser.AutoLogin = 'Enabled'
+            }
+        }
+
+        return $HoneyUserData
         
     }
     else 
     {
-        $ResourcesJsonContent = Get-BHJSONObject -BHFile ($Cache:BHDomainPath + '\' + $DomainNetBIOSName + '\HoneyAccounts.json')
-        return $ResourcesJsonContent
+        $HoneyUserData = Get-BHJSONObject -BHFile ($Cache:BHDomainPath + '\' + $DomainNetBIOSName + '\HoneyAccounts.json')
+                        
+        return $HoneyUserData
     }
     
-
-    
+  
     
     
 }
@@ -227,15 +350,34 @@ Function Get-BHDHoneyUserDetailsData
 {
     param(
         [string]$DistinguishedName,
-        [string]$DomainNetBIOSName = 'BERG'
+        [string]$DomainNetBIOSName = ''
     )
 
-   
-    $ResourcesJsonContent = Get-BHJSONObject -BHFile ($Cache:BHDomainPath + '\' + $DomainNetBIOSName + '\HoneyAccounts.json')
+    $HoneyUserData = @()
 
-    $UserDetails = $ResourcesJsonContent | Where-Object DistinguishedName -eq $DistinguishedName
+    if($DomainNetBIOSName -eq '')
+    {
 
-    return $UserDetails
+        $DomainFolders = ($Cache:BHDomainPath + '\') | Get-ChildItem | ?{ $_.PSIsContainer }
+        Foreach($Folder in $DomainFolders)
+        {
+            $DomainFolderPath = $Folder.FullName
+            $HoneyUserObjects  = Get-BHJSONObject -BHFile ($DomainFolderPath + '\HoneyAccounts.json')
+            
+            $HoneyUserData = $HoneyUserObjects | Where-Object DistinguishedName -eq $DistinguishedName
+
+        }
+
+        return $HoneyUserData
+    }
+    else 
+    {
+        $ResourcesJsonContent = Get-BHJSONObject -BHFile ($Cache:BHDomainPath + '\' + $DomainNetBIOSName + '\HoneyAccounts.json')
+        $UserDetails = $ResourcesJsonContent | Where-Object DistinguishedName -eq $DistinguishedName
+        return $UserDetails
+    }
+    
+    
     
 }
 

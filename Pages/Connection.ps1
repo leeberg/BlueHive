@@ -1,5 +1,5 @@
 
-New-UDPage -Name "Domain Connection" -Icon server -Content {
+New-UDPage -Name "Connection" -Icon server -Endpoint {
     
     Write-AuditLog -BSLogContent "Loaded Domain Connection Page"
 

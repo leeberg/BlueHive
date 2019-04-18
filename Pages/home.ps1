@@ -3,10 +3,7 @@
 New-UDPage -Name "Home" -Icon home -Endpoint {
 
     $HoneyUsers = Get-BHHoneyAccountData
-    $UserAccounts = Get-BHAccountData
     $DeploymentHistory = Get-BHDeploymentHistoryData
-
-
 
     New-UDLayout -Columns 4 -Content {  
       

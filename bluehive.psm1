@@ -36,6 +36,8 @@
     $Cache:BSLastNamesFile = $Cache:BlueHiveFolder + '\Data\Generation\LastNames.txt'
     $Cache:BSServiceAccountNamesFile = $Cache:BlueHiveFolder + '\Data\Generation\service-accounts.txt'
 
+    #Special Functions Path
+    $Cache:AutoLoginTrackerFile = $Cache:BHManagedPath + '\AutoLogins.json'
 
     # Create Folders / Log Files
     if((Test-Path -Path $Cache:BHRetrievedPath) -eq $false){New-Item -Path $Cache:BHRetrievedPath -ItemType Directory}
@@ -44,6 +46,7 @@
     if((Test-Path -Path $Cache:BHLogFolderPath) -eq $false){New-Item -Path $Cache:BHLogFolderPath -ItemType Directory}
     if((Test-Path -Path $Cache:BHLogFilePath) -eq $false){New-Item -Path $Cache:BHLogFilePath -ItemType File}
     if((Test-Path -Path $Cache:BHErrorFilePath) -eq $false){New-Item -Path $Cache:BHErrorFilePath -ItemType File}
+    if((Test-Path -Path $Cache:AutoLoginTrackerFile) -eq $false){New-Item -Path $Cache:AutoLoginTrackerFile -ItemType File}
 
     ####
 
@@ -104,7 +107,7 @@
     }
     
     # Connect to AD
-    New-PSDrive –Name AD –PSProvider ActiveDirectory @Cache:ConnectionInfo –Root "//RootDSE/" -Scope Global
+    New-PSDrive -Name AD -PSProvider ActiveDirectory @Cache:ConnectionInfo -Root "//RootDSE/" -Scope Global
 
     $Pages = @()
     $Pages += . (Join-Path $PSScriptRoot "pages\home.ps1")
@@ -117,54 +120,53 @@
 
     # Scheduled Endpoints for User Logins
     $Cache:AutoLoginServer = $AutoLoginServer
-    $10MinSchedule = New-UDEndpointSchedule -Every 10 -Minute 
+
+    #TODO Make the Schedule Configurable
+    $10MinSchedule = New-UDEndpointSchedule -Every 10 -Minute
     
-    #TODO Move this to it's own module
     $AutoLoginEndpoint = New-UDEndpoint -Schedule $10MinSchedule -Endpoint {
         
-        $HoneyAccounts = Get-BHHoneyAccountData
-        ForEach($HoneyUser in $HoneyAccounts)
+        $AutoLoginAccounts = Get-HoneyUserAutoLogin
+        ForEach($HoneyUser in $AutoLoginAccounts)
         {
-            if($HoneyUser.AutoLogin -eq 'Enabled')
-            {
-                
+                #Get the Extended User Details from Local Storage
+                $HoneyUserDetails = Get-BHDHoneyUserDetailsData -DistinguishedName $HoneyUser.DistinguishedName
+
+                #Reset the Honey User Password
                 $RandomPassword = ConvertTo-SecureString -String (([char[]]([char]33..[char]95) + ([char[]]([char]97..[char]126)) + 0..9 | sort {Get-Random})[0..8] -join '') -AsPlainText -Force
                 Set-ADAccountPassword -Identity $HoneyUser.DistinguishedName -Reset -NewPassword $RandomPassword @Cache:ConnectionInfo 
-                $HoneyCred = New-Object System.Management.Automation.PSCredential(($HoneyUser.ParentNetBios+'\'+$HoneyUser.name),$RandomPassword)
+                $HoneyCred = New-Object System.Management.Automation.PSCredential(($HoneyUserDetails.ParentNetBios+'\'+$HoneyUserDetails.name),$RandomPassword)
 
-
+                #Login to your Specified Login Server, Run a command, and Close Session
                 $HoneySession = New-PSSession -Credential $HoneyCred -ComputerName $Cache:AutoLoginServer
-                Invoke-Command $HoneySession -Scriptblock { get-aduser -filter * }
+                $Command = Invoke-Command $HoneySession -Scriptblock { Get-AdUser -Identity $args[0] } -ArgumentList ($HoneyUser.DistinguishedName)
                 Remove-PSSession -Session $HoneySession
 
-                          
-            }
-            
+                # Update Local Honey Auto Login Record
+                Set-HoneyUserAutoLogin -UserDistinguishedName $HoneyUser.DistinguishedName -AutoLoginSetting $true -LoginTime (Get-Date -format u) -isUpdate $true
 
+                #Reset the Honey User Password (LOL SECURITY?)
+                $RandomPassword = ConvertTo-SecureString -String (([char[]]([char]33..[char]95) + ([char[]]([char]97..[char]126)) + 0..9 | sort {Get-Random})[0..8] -join '') -AsPlainText -Force
+                Set-ADAccountPassword -Identity $HoneyUser.DistinguishedName -Reset -NewPassword $RandomPassword @Cache:ConnectionInfo 
+                
         }
     }
 
 
-    <#
-
-    #>
-
-
-
     #Startup the Dashboard
     # TODO add AutoLogin Endpoint
-    $BSEndpoints = New-UDEndpointInitialization -Module @("Modules\Honey\Honey.psm1", "Modules\Honey\HoneyAD.psm1", "Modules\Honey\HoneyData.psm1")
-    $Dashboard = New-UDDashboard -Title "BlueHive 🐝 🍯 🐝" -Pages $Pages -EndpointInitialization $BSEndpoints -Theme $DarkDefault
+    $BHEndpoints = New-UDEndpointInitialization -Module @("Modules\Honey\Honey.psm1", "Modules\Honey\HoneyAD.psm1", "Modules\Honey\HoneyData.psm1") 
+    
+    $Dashboard = New-UDDashboard -Title "BlueHive 🐝 🍯 🐝" -Pages $Pages -EndpointInitialization $BHEndpoints  -Theme $DarkDefault
 
     Try{
-        Write-AuditLog -BSLogContent "Starting BlueHive!"
-        Start-UDDashboard -Dashboard $Dashboard -Port 10000 
-        Write-AuditLog -BSLogContent "BlueHive Started!"
+
+        Start-UDDashboard -Dashboard $Dashboard -Port 10000 -Endpoint $AutoLoginEndpoint
+
     }
     Catch
     {
         Write-Error($_.Exception)
-        Write-AuditLog -BSLogContent "BlueHive Failed to Start!"
     }
     
 
