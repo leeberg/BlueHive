@@ -48,9 +48,9 @@
 ## Usage
 1. **SETUP** - Populate your own environmental variables in the "start.ps1" script. Specifically the folowing variables:
    * ``$DomainControllerFQDN`` - FQDN of the domain controller bluehive will interact with.
-   * ``$BlueHiveFolder`` EX: 'C:\Users\lee\git\BlueHive' - Data Storage for Bluehive
+   * ``$BlueHiveFolder`` EX: 'C:\Users\lee\git\BlueHive' - Data Storage for Bluehive **MAKE SURE YOU HAVE THE "GENERATED" FOLDER** to ensure proper account/name creation.
    * ``$AutoLoginServer`` FQDN of servce where new powershell sessions will login with honey accounts (Honey accoutns must have login rights).
-2. Use the start script to connect to active directory and startup the dashboard.
+2. Use the start script to connect to active directory and startup the dashboard - **You may have to start your powershell as an Administrator**.
 3. Open the "Domain Connection" page and initiate a new domain sync by specifying your domain name and clicking the "Sync" button.
 4. Verify Domain Information in the "Existing Domain Connection" Pane. **Note - at this point you should have domain data populated in your `Data\Retrieved\Domains` folder
 5. Use Deployment Page to deploy new Honey Account
