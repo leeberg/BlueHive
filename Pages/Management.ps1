@@ -62,7 +62,7 @@ New-UDPage -Name "Managment" -Icon wrench -Content {
                                      # RUN HONEY USER SYNC
                                      $DomainObject = Get-BHDomain -DomainName $ParentNetBios
                                      Save-AllADHoneyUsers -Domain $DomainObject
-                                     Sync-UDElement -Id "ManagedHoneyAccountUsersGrid" Broadcast
+                                     Sync-UDElement -Id "ManagedHoneyAccountUsersGrid" -Broadcast
 
                         }
 
